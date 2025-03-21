@@ -231,9 +231,22 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
     }
     
     const correctOptionText = options[correctOptionIndex].text;
+    
+    // Show a toast that we're generating options
+    toast({
+      title: 'Generating options',
+      description: 'Using AI to create plausible wrong answers...',
+    });
+    
+    // Get randomized options using our advanced algorithm
     const randomizedOptions = generateRandomOptions(correctOptionText);
     
     setOptions(randomizedOptions);
+    
+    toast({
+      title: 'Options generated!',
+      description: 'AI has created plausible wrong answers based on the correct option.',
+    });
   };
   
   const isPending = createCardMutation.isPending || updateCardMutation.isPending;
@@ -317,11 +330,12 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
                 </Button>
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant="default" 
                   size="sm"
                   onClick={handleGenerateRandomOptions}
+                  className="bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600"
                 >
-                  <i className="ri-shuffle-line mr-1"></i> Generate Random
+                  <i className="ri-robot-line mr-1"></i> Generate with AI
                 </Button>
               </div>
             </div>
@@ -382,16 +396,65 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
           
           <div className="space-y-2">
             <Label>Image (optional)</Label>
-            <div className="flex flex-col space-y-2">
-              <Input 
-                type="url"
-                value={imageUrl || ''}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Enter image URL"
-              />
+            <Tabs defaultValue="upload" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                <TabsTrigger value="url">Image URL</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="space-y-3 pt-2">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center justify-center w-full">
+                    <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <i className="ri-upload-2-line text-2xl text-gray-400 mb-2"></i>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG or GIF (max. 5MB)</p>
+                      </div>
+                      <input 
+                        id="image-upload" 
+                        type="file" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast({
+                                title: 'File too large',
+                                description: 'Maximum file size is 5MB.',
+                                variant: 'destructive',
+                              });
+                              return;
+                            }
+                            
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                              const result = e.target?.result as string;
+                              setImageUrl(result);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        accept="image/png,image/jpeg,image/gif"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="url" className="space-y-3 pt-2">
+                <Input 
+                  type="url"
+                  value={imageUrl || ''}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="Enter image URL"
+                />
+              </TabsContent>
               
               {imageUrl && (
-                <div className="mt-2 relative">
+                <div className="mt-3 relative">
                   <img 
                     src={imageUrl} 
                     alt="Card image preview"
@@ -399,7 +462,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
                     onError={() => {
                       toast({
                         title: 'Image Error',
-                        description: 'The image URL is invalid or the image is not accessible.',
+                        description: 'The image could not be loaded.',
                         variant: 'destructive',
                       });
                       setImageUrl(null);
@@ -416,7 +479,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
                   </Button>
                 </div>
               )}
-            </div>
+            </Tabs>
           </div>
           
           <DialogFooter className="pt-4">
