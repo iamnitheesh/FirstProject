@@ -9,6 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import type { Flashcard } from '@shared/schema';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface FlashcardItemProps {
   card: Flashcard;
@@ -20,11 +22,11 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const { renderLatex } = useLatex(cardRef);
   const { toast } = useToast();
-  
+
   useEffect(() => {
     renderLatex();
   }, [card, renderLatex]);
-  
+
   const deleteCardMutation = useMutation({
     mutationFn: async (cardId: number) => {
       await apiRequest('DELETE', `/api/cards/${cardId}`);
@@ -44,12 +46,12 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
       });
     }
   });
-  
+
   const handleDelete = () => {
     deleteCardMutation.mutate(card.id);
     setConfirmDelete(false);
   };
-  
+
   return (
     <>
       <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden" ref={cardRef}>
@@ -95,26 +97,38 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
           <div className="p-4 bg-gray-50">
             <div className="text-sm text-gray-600 mb-2">Options:</div>
             <div className="text-xs space-y-1">
-              {card.options.map((option, index) => (
-                <div key={index} className="flex items-start">
-                  <span className={`inline-flex items-center justify-center h-4 w-4 rounded-full mr-1.5 flex-shrink-0 ${
-                    option.isCorrect 
-                      ? 'bg-green-200 text-green-700' 
-                      : 'bg-gray-200 text-gray-700'
-                  }`}>
-                    <span>{getOptionLetter(index)}</span>
-                  </span>
-                  <span 
-                    className="text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: option.text }}
-                  ></span>
+              {card.options[0]?.isMultipleSelect ? (
+                <div className="space-y-2">
+                  {card.options.map((option, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <Checkbox id={`option-${index}`} />
+                      <div className="flex-grow">
+                        <label htmlFor={`option-${index}`} className="text-sm font-medium leading-none cursor-pointer">
+                          {renderLatex(option.text)}
+                        </label>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <RadioGroup>
+                  {card.options.map((option, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                      <div className="flex-grow">
+                        <label htmlFor={`option-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          {renderLatex(option.text)}
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
-      
+
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>

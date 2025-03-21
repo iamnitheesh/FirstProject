@@ -36,6 +36,7 @@ export const insertFlashcardSetSchema = createInsertSchema(flashcardSets).omit({
 export const optionSchema = z.object({
   text: z.string(),
   isCorrect: z.boolean().default(false),
+  isMultipleSelect: z.boolean().default(false),
 });
 
 export type Option = z.infer<typeof optionSchema>;
