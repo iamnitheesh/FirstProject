@@ -82,6 +82,15 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
               className="text-gray-800 mb-2" 
               dangerouslySetInnerHTML={{ __html: card.question }}
             ></div>
+            {card.imageUrl && (
+              <div className="mt-3 mb-2">
+                <img 
+                  src={card.imageUrl} 
+                  alt="Card illustration" 
+                  className="max-w-full rounded-md border border-gray-200"
+                />
+              </div>
+            )}
           </div>
           <div className="p-4 bg-gray-50">
             <div className="text-sm text-gray-600 mb-2">Options:</div>

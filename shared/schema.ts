@@ -46,6 +46,7 @@ export const flashcards = pgTable("flashcards", {
   question: text("question").notNull(),
   options: jsonb("options").$type<Option[]>().notNull(),
   explanation: text("explanation"),
+  imageUrl: text("image_url"),
   setId: integer("set_id").references(() => flashcardSets.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

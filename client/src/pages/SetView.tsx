@@ -88,6 +88,10 @@ export default function SetView() {
     setLocation(`/sets/${id}/study`);
   };
   
+  const handleStartTest = () => {
+    setLocation(`/sets/${id}/test`);
+  };
+  
   // Handle errors
   if (setError) {
     toast({
@@ -173,6 +177,13 @@ export default function SetView() {
                   disabled={isLoadingSet || cards.length === 0}
                 >
                   <i className="ri-play-line mr-1"></i> Study
+                </Button>
+                <Button 
+                  onClick={handleStartTest}
+                  className="bg-orange-500 hover:bg-orange-600"
+                  disabled={isLoadingSet || cards.length === 0}
+                >
+                  <i className="ri-test-tube-line mr-1"></i> Take Test
                 </Button>
                 
                 <DropdownMenu>

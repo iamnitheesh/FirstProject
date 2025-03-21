@@ -79,6 +79,7 @@ export class MemStorage implements IStorage {
         { text: "\\(f'(x) = 2x \\sin(x) - x^2 \\cos(x)\\)", isCorrect: false }
       ],
       explanation: "Using the product rule: \\(f'(x) = 2x \\sin(x) + x^2 \\cos(x)\\)",
+      imageUrl: null,
       setId: 1,
       createdAt: new Date()
     };
@@ -94,6 +95,7 @@ export class MemStorage implements IStorage {
         { text: "\\(\\frac{x^2}{2}e^x + C\\)", isCorrect: false }
       ],
       explanation: "Using integration by parts with \\(u = x\\) and \\(dv = e^x dx\\)",
+      imageUrl: null,
       setId: 1,
       createdAt: new Date()
     };
