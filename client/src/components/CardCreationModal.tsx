@@ -14,6 +14,8 @@ import { generateRandomOptions } from '@/lib/helpers';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Flashcard, Option } from '@shared/schema';
 import LaTeXEditor from '@/components/LaTeXEditor';
+import LaTeXOptionEditor from '@/components/LaTeXOptionEditor';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CardCreationModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
   
   const previewRef = useRef<HTMLDivElement>(null);
   const { renderLatex } = useLatex(previewRef);
+  const isMobile = useIsMobile();
   
   // Reset form when modal opens
   useEffect(() => {
@@ -254,8 +257,8 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className={`${isMobile ? 'p-4 w-[95vw] rounded-lg' : 'sm:max-w-3xl'} max-h-[90vh] overflow-y-auto`}>
+        <DialogHeader className={isMobile ? 'mb-2' : ''}>
           <DialogTitle>
             {editCard ? 'Edit Card' : 'Add New Card'}
           </DialogTitle>
@@ -296,8 +299,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label>Options</Label>
-              <div className="flex gap-2">
-                <Button 
+              <Button 
                   type="button" 
                   variant="outline" 
                   size="sm"
@@ -306,16 +308,6 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
                 >
                   <i className="ri-add-line mr-1"></i> Add Option
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="default" 
-                  size="sm"
-                  onClick={handleGenerateRandomOptions}
-                  className="bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600"
-                >
-                  <i className="ri-robot-line mr-1"></i> Generate with AI
-                </Button>
-              </div>
             </div>
             
             <RadioGroup
@@ -331,12 +323,72 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
                   </div>
                   
                   <div className="flex-grow">
-                    <Textarea
-                      value={option.text}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                      rows={2}
-                    />
+                    <div className="space-y-2">
+                      <Textarea
+                        value={option.text}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                        rows={2}
+                      />
+                      
+                      {/* LaTeX & Image buttons for each option */}
+                      <div className="flex flex-wrap gap-2">
+                        {/* LaTeX editor button */}
+                        <LaTeXOptionEditor 
+                          initialValue={option.text} 
+                          onSave={(value) => handleOptionChange(index, value)}
+                        />
+                        
+                        {/* Option image uploader */}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs px-2 flex items-center"
+                          onClick={() => {
+                            // Create a hidden file input element
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/png,image/jpeg,image/gif';
+                            input.style.display = 'none';
+                            document.body.appendChild(input);
+                            
+                            // Handle file selection
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast({
+                                    title: 'File too large',
+                                    description: 'Maximum file size is 5MB.',
+                                    variant: 'destructive',
+                                  });
+                                  document.body.removeChild(input);
+                                  return;
+                                }
+                                
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                  const result = e.target?.result as string;
+                                  // Add image HTML tag to the option text
+                                  const imageTag = `<img src="${result}" alt="Option ${String.fromCharCode(65 + index)} image" style="max-width: 100%; max-height: 150px; display: block; margin: 10px 0;" />`;
+                                  handleOptionChange(index, option.text + imageTag);
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                              
+                              // Clean up the input element
+                              document.body.removeChild(input);
+                            };
+                            
+                            // Trigger the file selection dialog
+                            input.click();
+                          }}
+                        >
+                          <i className="ri-image-add-line mr-1"></i> Image
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="flex flex-col items-center space-y-2 pt-2">
@@ -464,11 +516,84 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending 
-                ? (editCard ? 'Updating...' : 'Creating...') 
-                : (editCard ? 'Update Card' : 'Add Card')}
-            </Button>
+            <div className="flex gap-2">
+              {!editCard && (
+                <Button 
+                  type="button" 
+                  variant="secondary"
+                  disabled={isPending}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    
+                    if (!question.trim()) {
+                      toast({
+                        title: 'Question required',
+                        description: 'Please enter a question.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    
+                    // Filter out empty options
+                    const validOptions = options.filter(option => option.text.trim() !== '');
+                    
+                    if (validOptions.length < 2) {
+                      toast({
+                        title: 'Options required',
+                        description: 'Please provide at least 2 options.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    
+                    // Make sure one option is marked as correct
+                    if (!validOptions.some(option => option.isCorrect)) {
+                      toast({
+                        title: 'Correct option required',
+                        description: 'Please mark one option as correct.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    
+                    const cardData = {
+                      question: question.trim(),
+                      options: validOptions,
+                      explanation: explanation.trim() || undefined,
+                      imageUrl: imageUrl,
+                      setId
+                    };
+                    
+                    createCardMutation.mutate(cardData, {
+                      onSuccess: () => {
+                        // Reset form for next card instead of closing
+                        setQuestion('');
+                        setOptions([
+                          { text: '', isCorrect: true },
+                          { text: '', isCorrect: false },
+                          { text: '', isCorrect: false },
+                          { text: '', isCorrect: false }
+                        ]);
+                        setExplanation('');
+                        setImageUrl(null);
+                        
+                        toast({
+                          title: 'Success!',
+                          description: 'Card added. You can now add another card.',
+                        });
+                      }
+                    });
+                  }}
+                >
+                  <i className="ri-add-line mr-1"></i> Add & Create Next
+                </Button>
+              )}
+              <Button type="submit" disabled={isPending}>
+                {isPending 
+                  ? (editCard ? 'Updating...' : 'Creating...') 
+                  : (editCard ? 'Update Card' : 'Add Card')}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
