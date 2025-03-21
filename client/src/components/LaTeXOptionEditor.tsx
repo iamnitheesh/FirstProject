@@ -87,8 +87,8 @@ export default function LaTeXOptionEditor({ initialValue, onSave }: LaTeXOptionE
       </Button>
       
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className={`${isMobile ? 'p-4 w-[95vw] rounded-lg' : 'sm:max-w-md'}`}>
+          <DialogHeader className={isMobile ? 'mb-2' : ''}>
             <DialogTitle>LaTeX Option Editor</DialogTitle>
           </DialogHeader>
           
