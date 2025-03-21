@@ -124,9 +124,9 @@ export default function LaTeXEditor({ initialValue = '', onSave }: LaTeXEditorPr
             <ul className="list-disc list-inside">
               <li>Use $...$ for inline math</li>
               <li>Use $$...$$ for display math</li>
-              <li>For fractions: \frac{numerator}{denominator}</li>
-              <li>For exponents: x^{power}</li>
-              <li>For subscripts: x_{index}</li>
+              <li>For fractions: \frac{"{"}num{"}"}{"{"}denom{"}"}</li>
+              <li>For exponents: x^{"{"}power{"}"}</li>
+              <li>For subscripts: x_{"{"}index{"}"}</li>
             </ul>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { useLatex } from '@/hooks/useLatex';
 import { generateRandomOptions } from '@/lib/helpers';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Flashcard, Option } from '@shared/schema';
+import LaTeXEditor from '@/components/LaTeXEditor';
 
 interface CardCreationModalProps {
   isOpen: boolean;
@@ -284,33 +285,10 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
               </TabsContent>
               
               <TabsContent value="latex" className="space-y-2 p-0">
-                <Textarea
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Enter LaTeX code here. Use \( and \) for inline math, or \[ and \] for display math."
-                  rows={4}
-                  className="font-mono text-sm"
+                <LaTeXEditor 
+                  initialValue={question}
+                  onSave={(value) => setQuestion(value)}
                 />
-                
-                <div className="border border-gray-200 rounded-md overflow-hidden">
-                  <div className="px-3 py-2 border-b border-gray-200 bg-gray-50 text-xs text-gray-600 flex justify-between">
-                    <span>Preview</span>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-5 px-2 py-0 text-primary"
-                      onClick={renderLatex}
-                    >
-                      Refresh
-                    </Button>
-                  </div>
-                  <div 
-                    ref={previewRef} 
-                    className="p-3 min-h-[60px] bg-white"
-                    dangerouslySetInnerHTML={{ __html: question }}
-                  ></div>
-                </div>
               </TabsContent>
             </Tabs>
           </div>
