@@ -300,6 +300,16 @@ export default function TestMode() {
                   
                   <div className="mb-3 text-gray-800">{card.question}</div>
                   
+                  {card.imageUrl && (
+                    <div className="mb-3">
+                      <img 
+                        src={card.imageUrl} 
+                        alt="Question illustration" 
+                        className="max-w-full h-auto max-h-[150px] rounded-md border border-gray-200"
+                      />
+                    </div>
+                  )}
+                  
                   <div className="space-y-2 mb-3">
                     {card.options.map((option, optIdx) => (
                       <div 
