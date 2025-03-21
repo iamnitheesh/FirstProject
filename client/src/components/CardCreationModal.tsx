@@ -32,6 +32,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
     { text: '', isCorrect: false }
   ]);
   const [explanation, setExplanation] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('rich-text');
   
   const previewRef = useRef<HTMLDivElement>(null);
@@ -45,6 +46,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
         setQuestion(editCard.question);
         setOptions(editCard.options);
         setExplanation(editCard.explanation || '');
+        setImageUrl(editCard.imageUrl || null);
       } else {
         // New card mode - reset form
         setQuestion('');
@@ -55,6 +57,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
           { text: '', isCorrect: false }
         ]);
         setExplanation('');
+        setImageUrl(null);
       }
     }
   }, [isOpen, editCard]);
@@ -69,6 +72,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
       question: string;
       options: Option[];
       explanation?: string;
+      imageUrl?: string | null;
       setId: number;
     }) => {
       const response = await apiRequest('POST', '/api/cards', newCard);
@@ -97,6 +101,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
       question: string;
       options: Option[];
       explanation?: string;
+      imageUrl?: string | null;
     }) => {
       const { id, ...cardData } = updatedCard;
       const response = await apiRequest('PUT', `/api/cards/${id}`, cardData);
@@ -157,6 +162,7 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
       question: question.trim(),
       options: validOptions,
       explanation: explanation.trim() || undefined,
+      imageUrl: imageUrl,
       setId
     };
     
@@ -372,6 +378,45 @@ export default function CardCreationModal({ isOpen, onClose, setId, editCard }: 
               placeholder="Explain why the correct answer is right..."
               rows={3}
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Image (optional)</Label>
+            <div className="flex flex-col space-y-2">
+              <Input 
+                type="url"
+                value={imageUrl || ''}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Enter image URL"
+              />
+              
+              {imageUrl && (
+                <div className="mt-2 relative">
+                  <img 
+                    src={imageUrl} 
+                    alt="Card image preview"
+                    className="max-h-[200px] object-contain border border-gray-200 rounded-md p-2 bg-gray-50"
+                    onError={() => {
+                      toast({
+                        title: 'Image Error',
+                        description: 'The image URL is invalid or the image is not accessible.',
+                        variant: 'destructive',
+                      });
+                      setImageUrl(null);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-2 right-2 h-7 w-7 p-0 rounded-full bg-white bg-opacity-90 text-red-500 hover:bg-red-50"
+                    onClick={() => setImageUrl(null)}
+                  >
+                    <i className="ri-close-line"></i>
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           
           <DialogFooter className="pt-4">

@@ -375,7 +375,17 @@ export default function TestMode() {
         <Card className="bg-white rounded-xl shadow-md mb-6">
           <CardContent className="p-6 sm:p-8" ref={cardRef}>
             <div className="text-sm text-gray-500 mb-2">Question {currentCardIndex + 1}</div>
-            <div className="text-xl font-medium text-gray-800 mb-6">{currentCard?.question}</div>
+            <div className="text-xl font-medium text-gray-800 mb-4">{currentCard?.question}</div>
+            
+            {currentCard?.imageUrl && (
+              <div className="mb-6">
+                <img 
+                  src={currentCard.imageUrl} 
+                  alt="Question illustration" 
+                  className="max-w-full rounded-md border border-gray-200"
+                />
+              </div>
+            )}
             
             <div className="space-y-3 mb-4">
               {currentCard?.options.map((option, index) => (
