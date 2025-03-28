@@ -18,7 +18,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu, Smartphone, Download, Moon, Sun } from 'lucide-react';
+import { 
+  MoreVertical, 
+  Settings, 
+  HelpCircle, 
+  Menu, 
+  Download, 
+  Moon, 
+  Sun,
+  Plus
+} from '@/components/ui/icons';
 import { ShareApp } from './ShareApp';
 
 interface SidebarProps {
@@ -77,7 +86,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className="h-8 px-2"
                 onClick={() => setSetModalOpen(true)}
               >
-                <i className="ri-add-line mr-1"></i>
+                <Plus className="h-4 w-4 mr-1" />
                 New
               </Button>
             </div>
@@ -95,7 +104,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   >
                     <div className={`flex items-center w-full px-3 py-2 text-sm rounded-md cursor-pointer ${
                       isActive(`/sets/${set.id}`) 
-                        ? 'bg-blue-50 text-primary' 
+                        ? 'bg-black/10 text-black font-medium' 
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}>
                       <i className="ri-flashcard-line mr-2"></i>
@@ -145,7 +154,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {uniqueTags.map((tag, idx) => (
                     <span 
                       key={idx}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 cursor-pointer"
+                      className="px-2 py-1 text-xs bg-black/10 text-black rounded hover:bg-black/20 cursor-pointer"
                     >
                       {tag}
                     </span>
@@ -190,7 +199,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 
                 <Link href="/settings?tab=export" className="w-full">
                   <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <FileText className="mr-2 h-4 w-4" />
+                    <i className="ri-file-text-line mr-2 h-4 w-4" />
                     <span>Export All Sets to PDF</span>
                   </Button>
                 </Link>

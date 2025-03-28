@@ -116,26 +116,26 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md">
+      <header className="bg-black text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden text-white hover:bg-blue-500/30"
+              className="md:hidden text-white hover:bg-white/10"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-2">
-              <div className="bg-white/20 p-1.5 rounded-lg">
+              <div className="bg-white/10 p-1.5 rounded-lg">
                 <BookOpen className="text-white h-5 w-5" />
               </div>
               <h1 className="text-xl font-bold">
                 FormulaNote
               </h1>
             </div>
-            <div className="hidden md:flex text-sm text-blue-100 bg-blue-500/30 rounded-full px-3 py-1 items-center ml-4">
+            <div className="hidden md:flex text-sm text-white bg-white/10 rounded-full px-3 py-1 items-center ml-4">
               <span><CheckCircle className="h-3 w-3 mr-1" /> Offline Ready</span>
             </div>
           </div>
@@ -143,16 +143,16 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <Button 
               onClick={() => setSetModalOpen(true)} 
-              className="bg-white text-blue-700 hover:bg-blue-50 shadow-sm font-medium"
+              className="bg-white text-black hover:bg-gray-100 shadow-sm font-medium"
             >
               <Plus className="h-4 w-4 mr-1.5" /> New Set
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-500/30 rounded-full">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
                 <Settings className="h-5 w-5" />
               </Button>
             </Link>
-            <div className="w-9 h-9 rounded-full bg-white text-blue-700 flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center shadow-sm">
               <span className="font-semibold text-sm">JS</span>
             </div>
           </div>
@@ -173,8 +173,8 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)]">
               <div className="bg-white rounded-xl shadow-lg p-8 max-w-3xl w-full mx-auto">
                 <div className="text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-2xl mb-2">
-                    <i className="ri-book-open-line text-3xl"></i>
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-black text-white rounded-2xl mb-2">
+                    <BookOpen className="h-8 w-8" />
                   </div>
                   <h2 className="text-3xl font-bold text-gray-800">Welcome to FormulaNote</h2>
                   <p className="text-gray-600 max-w-xl mx-auto">
@@ -184,10 +184,10 @@ export default function Home() {
                   <div className="pt-4">
                     <Button 
                       onClick={() => setSetModalOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 h-auto rounded-lg font-semibold shadow-md"
+                      className="bg-black hover:bg-gray-800 text-white px-6 py-5 h-auto rounded-lg font-semibold shadow-md"
                       size="lg"
                     >
-                      <i className="ri-add-line mr-2"></i> Create Your First Set
+                      <Plus className="h-5 w-5 mr-2" /> Create Your First Set
                     </Button>
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export default function Home() {
                     className="flex items-center gap-1"
                     onClick={saveAllData}
                   >
-                    <i className="ri-save-line mr-1"></i> Save All
+                    <Save className="h-4 w-4 mr-1" /> Save All
                   </Button>
                   
                   <Button 
@@ -217,11 +217,11 @@ export default function Home() {
                   >
                     {autoSaveEnabled ? (
                       <>
-                        <i className="ri-checkbox-circle-line"></i> Auto-save On
+                        <CheckCircle2 className="h-4 w-4 mr-1" /> Auto-save On
                       </>
                     ) : (
                       <>
-                        <i className="ri-checkbox-blank-circle-line"></i> Auto-save Off
+                        <Square className="h-4 w-4 mr-1" /> Auto-save Off
                       </>
                     )}
                   </Button>
@@ -233,7 +233,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <i className="ri-search-line text-gray-400"></i>
+                      <Search className="h-4 w-4 text-gray-400" />
                     </div>
                     <Input
                       type="text"
@@ -266,7 +266,7 @@ export default function Home() {
                         className="rounded-none rounded-l-md"
                         onClick={() => setViewMode('grid')}
                       >
-                        <i className="ri-grid-fill"></i>
+                        <Grid className="h-4 w-4" />
                       </Button>
                       <Button
                         variant={viewMode === 'list' ? 'default' : 'outline'}
@@ -274,7 +274,7 @@ export default function Home() {
                         className="rounded-none rounded-r-md"
                         onClick={() => setViewMode('list')}
                       >
-                        <i className="ri-list-check"></i>
+                        <List className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
 import { useApi } from '@/lib/ApiContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Pencil, Trash2, Image, UploadCloud } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, Image, UploadCloud } from '@/components/ui/icons';
 import type { FlashcardSet, Flashcard } from '@shared/schema';
 import { formatDate } from '@/lib/helpers';
 
@@ -307,7 +307,7 @@ export default function FlashcardSetCard({ set, onDelete }: FlashcardSetCardProp
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleEditSubmit}>Save Changes</Button>
+            <Button onClick={handleEditSubmit} className="bg-black hover:bg-gray-800 text-white">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -376,6 +376,7 @@ export default function FlashcardSetCard({ set, onDelete }: FlashcardSetCardProp
             <Button 
               onClick={handleImageSubmit}
               disabled={!uploadedImage}
+              className="bg-black hover:bg-gray-800 text-white"
             >
               Save Image
             </Button>
