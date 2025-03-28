@@ -8,6 +8,7 @@ import SetView from "@/pages/SetView";
 import StudyMode from "@/pages/StudyMode";
 import TestMode from "@/pages/TestMode";
 import Settings from "@/pages/Settings";
+import Test from "@/pages/Test";
 import { useState, useEffect } from "react";
 import { DeviceProvider } from "@/components/DeviceContext";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
@@ -15,10 +16,12 @@ import OfflineIndicator from "@/components/OfflineIndicator";
 import { ApiProvider } from "@/lib/ApiContext";
 import { registerServiceWorker } from "@/lib/serviceWorker";
 import { initDB } from "@/lib/db";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 function Router() {
   return (
     <Switch>
+      <Route path="/test" component={Test} />
       <Route path="/" component={Home} />
       <Route path="/settings" component={Settings} />
       <Route path="/sets/:id" component={SetView} />
@@ -66,14 +69,16 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <DeviceProvider>
-        <ApiProvider>
-          <Router />
-          <PwaInstallPrompt />
-          <OfflineIndicator />
-          <Toaster />
-        </ApiProvider>
-      </DeviceProvider>
+      <ThemeProvider>
+        <DeviceProvider>
+          <ApiProvider>
+            <Router />
+            <PwaInstallPrompt />
+            <OfflineIndicator />
+            <Toaster />
+          </ApiProvider>
+        </DeviceProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -9,6 +9,7 @@ import { useDevice } from './DeviceContext';
 import SetCreationModal from './SetCreationModal';
 import { formatDate } from '@/lib/helpers';
 import type { FlashcardSet } from '@shared/schema';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -17,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu, Smartphone, Download } from 'lucide-react';
+import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu, Smartphone, Download, Moon, Sun } from 'lucide-react';
 import { ShareApp } from './ShareApp';
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const isMobile = useIsMobile();
   const [location] = useLocation();
   const [setModalOpen, setSetModalOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   
   // Fetch all flashcard sets
   const { data: sets = [], isLoading } = useQuery<FlashcardSet[]>({
@@ -61,7 +63,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <aside 
-        className={`fixed md:relative z-30 w-64 h-full bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out transform ${
+        className={`fixed md:relative z-30 w-64 h-full bg-background border-r border-border transition-transform duration-300 ease-in-out transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -176,28 +178,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   variant="ghost" 
                   size="sm" 
                   className="w-full justify-start"
-                  onClick={() => {
-                    const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                    if (theme === 'dark') {
-                      document.documentElement.classList.add('dark');
-                    } else {
-                      document.documentElement.classList.remove('dark');
-                    }
-                    localStorage.setItem('theme', theme);
-                  }}
+                  onClick={toggleTheme}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                  </svg>
-                  <span>Toggle Dark Mode</span>
+                  {theme === 'dark' ? (
+                    <Sun className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Moon className="mr-2 h-4 w-4" />
+                  )}
+                  <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
                 </Button>
                 
                 <Link href="/settings?tab=export" className="w-full">

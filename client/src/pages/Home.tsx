@@ -3,61 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
 import SetCreationModal from '@/components/SetCreationModal';
-import { Link, useLocation } from 'wouter';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Link } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/helpers';
 import type { FlashcardSet } from '@shared/schema';
-
-/**
- * Adjust a hex color by the given percentage
- * @param color - Hex color code
- * @param amount - Amount to adjust (-100 to 100)
- * @returns Adjusted hex color
- */
-function adjustColor(color: string, amount: number): string {
-  return color.replace(/^#/, '').replace(/.{1,2}/g, (c) => {
-    const value = Math.min(255, Math.max(0, parseInt(c, 16) + amount));
-    return value.toString(16).padStart(2, '0');
-  }).replace(/^/, '#');
-}
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator 
-} from '@/components/ui/dropdown-menu';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter, 
-  DialogDescription 
-} from '@/components/ui/dialog';
+import FlashcardSetCard from '@/components/FlashcardSetCard';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { queryClient } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-// No imports needed from Lucide React as we're using Remix Icons
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [setModalOpen, setSetModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSet, setSelectedSet] = useState<FlashcardSet | null>(null);
-  const [editForm, setEditForm] = useState({
-    title: '',
-    description: '',
-    primaryColor: '',
-    backgroundImage: '',
-  });
-  const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'alphabetical' | 'lastEdited' | 'recentlyUsed'>('lastEdited');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -131,105 +90,15 @@ export default function Home() {
         return a.title.localeCompare(b.title);
       } else if (sortBy === 'lastEdited') {
         // Use createdAt since updatedAt is not available in the current schema
-        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-        return dateB.getTime() - dateA.getTime();
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
       } else {
-        const dateA = a.lastAccessed ? new Date(a.lastAccessed) : new Date(0);
-        const dateB = b.lastAccessed ? new Date(b.lastAccessed) : new Date(0);
-        return dateB.getTime() - dateA.getTime();
+        const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
+        const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
+        return dateB - dateA;
       }
     });
-  
-  // Function to handle editing a set
-  const handleEditSet = (set: FlashcardSet, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedSet(set);
-    setEditForm({
-      title: set.title,
-      description: set.description || '',
-      primaryColor: set.primaryColor || '#3b82f6',
-      backgroundImage: set.backgroundImage || '',
-    });
-    setEditModalOpen(true);
-  };
-  
-  // Function to handle deleting a set
-  const handleDeleteSet = (set: FlashcardSet, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedSet(set);
-    setDeleteDialogOpen(true);
-  };
-  
-  // Function to save edited set
-  const saveEditedSet = async () => {
-    if (!selectedSet) return;
-    
-    try {
-      const response = await fetch(`/api/sets/${selectedSet.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editForm),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update set');
-      }
-      
-      // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/sets'] });
-      
-      toast({
-        title: 'Set updated',
-        description: 'The flashcard set has been updated successfully.',
-      });
-      
-      setEditModalOpen(false);
-    } catch (error) {
-      console.error('Error updating set:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update the flashcard set. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-  
-  // Function to confirm deletion of a set
-  const confirmDeleteSet = async () => {
-    if (!selectedSet) return;
-    
-    try {
-      const response = await fetch(`/api/sets/${selectedSet.id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete set');
-      }
-      
-      // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/sets'] });
-      
-      toast({
-        title: 'Set deleted',
-        description: 'The flashcard set has been deleted.',
-      });
-      
-      setDeleteDialogOpen(false);
-    } catch (error) {
-      console.error('Error deleting set:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete the flashcard set. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -290,69 +159,23 @@ export default function Home() {
           {sets.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)]">
               <div className="bg-white rounded-xl shadow-lg p-8 max-w-3xl w-full mx-auto">
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  <div className="space-y-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-2xl mb-2">
-                      <i className="ri-book-open-line text-3xl"></i>
-                    </div>
-                    <h2 className="text-3xl font-bold text-gray-800">Welcome to FormulaNote</h2>
-                    <p className="text-gray-600">
-                      Create customizable mathematical flashcards with rich LaTeX formatting to 
-                      master complex formulas and concepts.
-                    </p>
-                    <div className="pt-3">
-                      <h3 className="text-sm font-medium text-gray-500 uppercase mb-3">Features</h3>
-                      <ul className="space-y-2">
-                        <li className="flex items-center text-gray-600">
-                          <div className="bg-blue-100 rounded-full p-1 mr-2">
-                            <i className="ri-check-line text-blue-600"></i>
-                          </div>
-                          <span>Beautiful LaTeX math rendering</span>
-                        </li>
-                        <li className="flex items-center text-gray-600">
-                          <div className="bg-blue-100 rounded-full p-1 mr-2">
-                            <i className="ri-check-line text-blue-600"></i>
-                          </div>
-                          <span>Study and test modes for effective learning</span>
-                        </li>
-                        <li className="flex items-center text-gray-600">
-                          <div className="bg-blue-100 rounded-full p-1 mr-2">
-                            <i className="ri-check-line text-blue-600"></i>
-                          </div>
-                          <span>Full offline support for on-the-go study</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="pt-4">
-                      <Button 
-                        onClick={() => setSetModalOpen(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 h-auto rounded-lg font-semibold shadow-md"
-                        size="lg"
-                      >
-                        <i className="ri-add-line mr-2"></i> Create Your First Set
-                      </Button>
-                    </div>
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-2xl mb-2">
+                    <i className="ri-book-open-line text-3xl"></i>
                   </div>
-                  <div className="relative hidden md:block bg-gradient-to-br from-blue-100 to-blue-50 p-6 rounded-xl">
-                    <div className="absolute top-4 right-4">
-                      <div className="text-xs font-medium bg-blue-600 text-white px-2 py-1 rounded-full">
-                        Math made easy
-                      </div>
-                    </div>
-                    <div className="flex flex-col space-y-3">
-                      <div className="bg-white shadow-sm rounded-lg p-4 transform rotate-1">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Derivative Rules</div>
-                        <div className="text-blue-800 font-mono text-xs">$f(x) = x^2 \implies f'(x) = 2x$</div>
-                      </div>
-                      <div className="bg-white shadow-sm rounded-lg p-4 transform -rotate-1">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Integration by Parts</div>
-                        <div className="text-blue-800 font-mono text-xs">$\int u\,dv = uv - \int v\,du$</div>
-                      </div>
-                      <div className="bg-white shadow-sm rounded-lg p-4 transform rotate-1">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Pythagorean Theorem</div>
-                        <div className="text-blue-800 font-mono text-xs">$a^2 + b^2 = c^2$</div>
-                      </div>
-                    </div>
+                  <h2 className="text-3xl font-bold text-gray-800">Welcome to FormulaNote</h2>
+                  <p className="text-gray-600 max-w-xl mx-auto">
+                    Create customizable mathematical flashcards with rich LaTeX formatting to 
+                    master complex formulas and concepts.
+                  </p>
+                  <div className="pt-4">
+                    <Button 
+                      onClick={() => setSetModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 h-auto rounded-lg font-semibold shadow-md"
+                      size="lg"
+                    >
+                      <i className="ri-add-line mr-2"></i> Create Your First Set
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -392,304 +215,91 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Search and sort controls */}
-              <div className="bg-white p-4 rounded-xl shadow-sm mb-6">
+              {/* Search and Filter Controls */}
+              <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
                 <div className="flex flex-col md:flex-row gap-4">
-                  <div className="relative flex-grow">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500">
-                      <i className="ri-search-line text-lg"></i>
+                  <div className="flex-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i className="ri-search-line text-gray-400"></i>
                     </div>
                     <Input
-                      placeholder="Search your flashcard sets..."
+                      type="text"
+                      placeholder="Search flashcard sets..."
+                      className="pl-10"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 w-full bg-gray-50 border-gray-100 focus:border-blue-300 focus:ring-blue-300"
                     />
                   </div>
                   
-                  <div className="flex gap-3">
-                    <Select
-                      value={sortBy}
-                      onValueChange={(value: any) => setSortBy(value)}
+                  <div className="flex flex-wrap gap-2">
+                    <Select 
+                      value={sortBy} 
+                      onValueChange={(value) => setSortBy(value as any)}
                     >
-                      <SelectTrigger className="w-[180px] bg-gray-50 border-gray-100">
-                        <div className="flex items-center gap-1">
-                          <i className="ri-sort-asc text-blue-500"></i>
-                          <span>Sort by</span>
-                        </div>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="alphabetical">
-                          <div className="flex items-center">
-                            <i className="ri-sort-alphabetically text-blue-500 mr-2"></i>
-                            A-Z (Alphabetical)
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="lastEdited">
-                          <div className="flex items-center">
-                            <i className="ri-edit-line text-blue-500 mr-2"></i>
-                            Last Edited
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="recentlyUsed">
-                          <div className="flex items-center">
-                            <i className="ri-time-line text-blue-500 mr-2"></i>
-                            Recently Used
-                          </div>
-                        </SelectItem>
+                        <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                        <SelectItem value="lastEdited">Last Edited</SelectItem>
+                        <SelectItem value="recentlyUsed">Recently Used</SelectItem>
                       </SelectContent>
                     </Select>
                     
-                    <div className="flex rounded-md overflow-hidden border border-gray-100 bg-gray-50">
+                    <div className="flex rounded-md overflow-hidden">
                       <Button
-                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                        size="sm"
-                        className={`rounded-none ${viewMode === 'grid' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-500 hover:text-blue-600'}`}
+                        variant={viewMode === 'grid' ? 'default' : 'outline'}
+                        size="icon"
+                        className="rounded-none rounded-l-md"
                         onClick={() => setViewMode('grid')}
                       >
-                        <i className="ri-grid-fill text-lg"></i>
+                        <i className="ri-grid-fill"></i>
                       </Button>
                       <Button
-                        variant={viewMode === 'list' ? 'default' : 'ghost'}
-                        size="sm"
-                        className={`rounded-none ${viewMode === 'list' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-500 hover:text-blue-600'}`}
+                        variant={viewMode === 'list' ? 'default' : 'outline'}
+                        size="icon"
+                        className="rounded-none rounded-r-md"
                         onClick={() => setViewMode('list')}
                       >
-                        <i className="ri-list-unordered text-lg"></i>
+                        <i className="ri-list-check"></i>
                       </Button>
                     </div>
                   </div>
                 </div>
-                
-                {filteredAndSortedSets.length === 0 && searchQuery && (
-                  <div className="mt-3 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                    <div className="flex items-center">
-                      <i className="ri-information-line text-blue-500 mr-2"></i>
-                      No flashcard sets found matching "{searchQuery}". Try a different search term.
-                    </div>
-                  </div>
-                )}
-                
-                {searchQuery && filteredAndSortedSets.length > 0 && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <Badge className="px-2 py-1 bg-blue-100 text-blue-800 hover:bg-blue-100 border-none">
-                      {filteredAndSortedSets.length} {filteredAndSortedSets.length === 1 ? 'result' : 'results'}
-                    </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                      onClick={() => setSearchQuery('')}
-                    >
-                      <i className="ri-close-circle-line mr-1"></i>
-                      Clear search
-                    </Button>
-                  </div>
-                )}
               </div>
               
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Array(3).fill(0).map((_, i) => (
-                    <Card key={i} className="shadow-sm overflow-hidden">
-                      <CardContent className="p-0">
-                        <div className="p-5">
+              {/* Flashcard Sets Grid/List */}
+              <div className="mt-4">
+                {isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {Array(6).fill(0).map((_, idx) => (
+                      <div key={idx} className="bg-white rounded-md shadow-sm overflow-hidden">
+                        <Skeleton className="h-40 w-full" />
+                        <div className="p-4">
                           <Skeleton className="h-6 w-3/4 mb-2" />
                           <Skeleton className="h-4 w-full mb-1" />
                           <Skeleton className="h-4 w-2/3" />
                         </div>
-                        <div className="p-4 bg-gray-50 flex justify-between">
-                          <Skeleton className="h-4 w-1/4" />
-                          <Skeleton className="h-4 w-1/4" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className={viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" 
-                  : "space-y-4 sm:space-y-5"
-                }>
-                  {filteredAndSortedSets.map((set) => (
-                    <Card 
-                      key={set.id}
-                      className={`shadow hover:shadow-lg transition-all overflow-hidden relative group ${
-                        viewMode === 'list' ? 'flex' : ''
-                      } hover:translate-y-[-2px] duration-300`}
-                    >
-                      <div className="absolute top-2 right-2 z-10">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
-                              <i className="ri-more-2-fill"></i>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e) => handleEditSet(set, e)}>
-                              <i className="ri-edit-line mr-2 text-blue-600"></i>
-                              <span>Rename Set</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => handleDeleteSet(set, e)}>
-                              <i className="ri-delete-bin-line mr-2 text-red-500"></i>
-                              <span>Delete Set</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toast({
-                                title: "Feature Coming Soon",
-                                description: "Copying sets will be available in a future update.",
-                              });
-                            }}>
-                              <i className="ri-file-copy-line mr-2 text-gray-600"></i>
-                              <span>Duplicate Set</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toast({
-                                title: "Feature Coming Soon",
-                                description: "Moving cards between sets will be available in a future update.",
-                              });
-                            }}>
-                              <i className="ri-drag-move-line mr-2 text-gray-600"></i>
-                              <span>Move Cards</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
-                      
-                      <Link href={`/sets/${set.id}`} className={viewMode === 'list' ? 'flex-1' : ''}>
-                        <CardContent className={`p-0 cursor-pointer ${viewMode === 'list' ? 'flex' : ''}`}>
-                          {viewMode === 'grid' ? (
-                            <>
-                              {set.backgroundImage ? (
-                                <div 
-                                  className="h-40 w-full bg-cover bg-center relative overflow-hidden"
-                                  style={{ 
-                                    backgroundImage: `url(${set.backgroundImage})`,
-                                    borderBottom: `2px solid ${set.primaryColor || '#3b82f6'}`
-                                  }}
-                                >
-                                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.7)] flex flex-col justify-end p-4">
-                                    <h3 className="text-lg font-semibold mb-1 text-white">
-                                      {set.title}
-                                    </h3>
-                                    {set.description && (
-                                      <p className="text-sm text-white/80 line-clamp-1">
-                                        {set.description}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div 
-                                  className="h-40 w-full flex flex-col justify-end p-4 relative overflow-hidden"
-                                  style={{ 
-                                    backgroundColor: set.primaryColor || '#3b82f6',
-                                    backgroundImage: set.primaryColor 
-                                      ? `linear-gradient(135deg, ${set.primaryColor}, ${adjustColor(set.primaryColor, -30)})`
-                                      : 'linear-gradient(135deg, #3b82f6, #2563eb)'
-                                  }}
-                                >
-                                  <div className="absolute top-3 right-3 bg-white/20 rounded-full p-1.5">
-                                    <i className="ri-book-open-line text-white text-sm"></i>
-                                  </div>
-                                  <h3 className="text-white text-xl font-bold line-clamp-1">{set.title}</h3>
-                                  {set.description && (
-                                    <p className="text-white/90 text-sm line-clamp-2 mt-1">{set.description}</p>
-                                  )}
-                                </div>
-                              )}
-                              
-                              {set.tags && set.tags.length > 0 && (
-                                <div className={`flex flex-wrap gap-1 ${set.backgroundImage ? 'px-4 pt-3 pb-2' : 'mt-2 px-5'}`}>
-                                  {set.tags.map((tag, i) => (
-                                    <span
-                                      key={i}
-                                      className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                              
-                              <div className="p-4 bg-gray-50 mt-auto">
-                                <div className="flex justify-between items-center mb-2 text-xs text-gray-500">
-                                  <span className="flex items-center">
-                                    <i className="ri-file-list-line mr-1 text-blue-600"></i>
-                                    {(set as any).totalCards || 0} {(set as any).totalCards === 1 ? 'card' : 'cards'}
-                                  </span>
-                                  <span className="flex items-center">
-                                    <i className="ri-time-line mr-1"></i>
-                                    {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never used'}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex items-center">
-                                  <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div 
-                                      className="bg-primary h-2 rounded-full" 
-                                      style={{ 
-                                        width: `${Math.min(((set as any).progress || 0) * 100, 100)}%`,
-                                        backgroundColor: set.primaryColor || undefined
-                                      }}
-                                    ></div>
-                                  </div>
-                                  <div className="ml-2 text-xs text-gray-500">
-                                    {Math.round(((set as any).progress || 0) * 100)}%
-                                  </div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div 
-                                className="w-2 h-full flex-shrink-0" 
-                                style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
-                              ></div>
-                              <div className="p-4 flex-1">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-800">
-                                      {set.title}
-                                    </h3>
-                                    {set.description && (
-                                      <p className="text-sm text-gray-600 line-clamp-1 mt-1">
-                                        {set.description}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-gray-500 flex flex-col items-end">
-                                    <span>Created: {formatDate(set.createdAt)}</span>
-                                    <span className="mt-1">Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
-                                  </div>
-                                </div>
-                                
-                                {set.tags && set.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    {set.tags.map((tag, i) => (
-                                      <span
-                                        key={i}
-                                        className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
-                                      >
-                                        {tag}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Link>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className={viewMode === 'grid' 
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" 
+                    : "space-y-4 sm:space-y-5"
+                  }>
+                    {filteredAndSortedSets.map((set) => (
+                      <FlashcardSetCard
+                        key={set.id}
+                        set={set}
+                        onDelete={() => {
+                          queryClient.invalidateQueries({ queryKey: ['/api/sets'] });
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </main>
@@ -700,112 +310,6 @@ export default function Home() {
         isOpen={setModalOpen} 
         onClose={() => setSetModalOpen(false)} 
       />
-      
-      {/* Edit Set Dialog */}
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Flashcard Set</DialogTitle>
-            <DialogDescription>
-              Update the title, description, color, or add a background image to your flashcard set.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
-              <Input
-                id="title"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                className="col-span-3"
-                placeholder="Enter a title for your set"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="col-span-3"
-                placeholder="Optional description of your flashcard set"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="color" className="text-right">
-                Color
-              </Label>
-              <div className="col-span-3 flex space-x-2">
-                {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'].map((color) => (
-                  <div
-                    key={color}
-                    className={`w-8 h-8 rounded-full cursor-pointer transition-all ${
-                      editForm.primaryColor === color ? 'ring-2 ring-offset-2 ring-gray-400' : ''
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setEditForm({ ...editForm, primaryColor: color })}
-                  ></div>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="backgroundImage" className="text-right">
-                Background Image
-              </Label>
-              <Input
-                id="backgroundImage"
-                value={editForm.backgroundImage}
-                onChange={(e) => setEditForm({ ...editForm, backgroundImage: e.target.value })}
-                className="col-span-3"
-                placeholder="Enter image URL (optional)"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={saveEditedSet} disabled={!editForm.title.trim()}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Delete Flashcard Set</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this flashcard set? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {selectedSet && (
-              <div className="p-4 border rounded-md bg-red-50">
-                <p className="font-medium text-gray-900">{selectedSet.title}</p>
-                {selectedSet.description && (
-                  <p className="text-sm text-gray-500 mt-1">{selectedSet.description}</p>
-                )}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteSet}>
-              Delete Set
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

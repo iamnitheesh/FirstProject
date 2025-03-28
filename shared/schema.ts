@@ -22,8 +22,10 @@ export const flashcardSets = pgTable("flashcard_sets", {
   tags: text("tags").array(),
   primaryColor: text("primary_color").default("#3b82f6"),
   backgroundImage: text("background_image"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   lastAccessed: timestamp("last_accessed"),
+  lastModified: timestamp("last_modified"),
   userId: integer("user_id").references(() => users.id),
 });
 
@@ -31,6 +33,7 @@ export const insertFlashcardSetSchema = createInsertSchema(flashcardSets).omit({
   id: true,
   createdAt: true,
   lastAccessed: true,
+  lastModified: true,
 });
 
 // Option type for multiple choice

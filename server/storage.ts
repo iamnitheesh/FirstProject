@@ -126,8 +126,10 @@ export class MemStorage implements IStorage {
       tags: ["calculus", "math", "derivatives"],
       primaryColor: "#3b82f6",
       backgroundImage: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80",
+      imageUrl: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMzYjgyZjYiIC8+CiAgPHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPk1hdGg8L3RleHQ+Cjwvc3ZnPg==",
       createdAt: new Date(),
       lastAccessed: new Date(),
+      lastModified: new Date(),
       userId: null
     };
     this.flashcardSets.set(1, calculusSet);
@@ -235,9 +237,11 @@ export class MemStorage implements IStorage {
       tags: set.tags || null,
       primaryColor: set.primaryColor || null,
       backgroundImage: set.backgroundImage || null,
+      imageUrl: set.imageUrl || null,
       userId: set.userId || null,
       createdAt: new Date(),
-      lastAccessed: new Date() 
+      lastAccessed: new Date(),
+      lastModified: new Date() 
     };
     this.flashcardSets.set(id, newSet);
     
@@ -250,7 +254,12 @@ export class MemStorage implements IStorage {
     const existingSet = this.flashcardSets.get(id);
     if (!existingSet) return undefined;
 
-    const updatedSet: FlashcardSet = { ...existingSet, ...set };
+    // Update the lastModified timestamp whenever a set is updated
+    const updatedSet: FlashcardSet = { 
+      ...existingSet, 
+      ...set,
+      lastModified: new Date() 
+    };
     this.flashcardSets.set(id, updatedSet);
     
     // Return enriched data
