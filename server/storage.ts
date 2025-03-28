@@ -125,6 +125,7 @@ export class MemStorage implements IStorage {
       description: "Basic concepts of calculus including derivatives and integrals",
       tags: ["calculus", "math", "derivatives"],
       primaryColor: "#3b82f6",
+      backgroundImage: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=500&q=80",
       createdAt: new Date(),
       lastAccessed: new Date(),
       userId: null
@@ -205,7 +206,8 @@ export class MemStorage implements IStorage {
       title: set.title,
       description: set.description || null,
       tags: set.tags || null,
-      primaryColor: set.primaryColor || null, 
+      primaryColor: set.primaryColor || null,
+      backgroundImage: set.backgroundImage || null,
       userId: set.userId || null,
       createdAt: new Date(),
       lastAccessed: new Date() 

@@ -24,6 +24,7 @@ export default function SetCreationModal({ isOpen, onClose }: SetCreationModalPr
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#3b82f6');
+  const [backgroundImage, setBackgroundImage] = useState('');
   
   const createSetMutation = useMutation({
     mutationFn: async (newSet: { 
@@ -31,6 +32,7 @@ export default function SetCreationModal({ isOpen, onClose }: SetCreationModalPr
       description?: string; 
       tags?: string[];
       primaryColor?: string;
+      backgroundImage?: string;
     }) => {
       const response = await apiRequest('POST', '/api/sets', newSet);
       return response.json();
@@ -70,7 +72,8 @@ export default function SetCreationModal({ isOpen, onClose }: SetCreationModalPr
       title: title.trim(),
       description: description.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
-      primaryColor
+      primaryColor,
+      backgroundImage: backgroundImage.trim() || undefined
     });
   };
   
@@ -99,6 +102,7 @@ export default function SetCreationModal({ isOpen, onClose }: SetCreationModalPr
     setTags([]);
     setTagInput('');
     setPrimaryColor('#3b82f6');
+    setBackgroundImage('');
   };
   
   // Color options
@@ -182,16 +186,27 @@ export default function SetCreationModal({ isOpen, onClose }: SetCreationModalPr
           
           <div className="space-y-1">
             <Label>Appearance</Label>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-2 mb-3">
               {colorOptions.map((color) => (
                 <button
                   key={color}
                   type="button"
-                  className={`w-full h-8 rounded ${primaryColor === color ? 'ring-2 ring-offset-2' : 'hover:ring-2 hover:ring-offset-1'}`}
-                  style={{ backgroundColor: color, ringColor: color }}
+                  className={`w-full h-8 rounded ${primaryColor === color ? 'ring-2 ring-offset-2 ring-gray-400' : 'hover:ring-2 hover:ring-offset-1'}`}
+                  style={{ backgroundColor: color }}
                   onClick={() => setPrimaryColor(color)}
                 />
               ))}
+            </div>
+            
+            <div className="pt-2">
+              <Label htmlFor="backgroundImage">Background Image (optional)</Label>
+              <Input
+                id="backgroundImage"
+                value={backgroundImage}
+                onChange={(e) => setBackgroundImage(e.target.value)}
+                placeholder="Enter image URL for card background"
+                className="mt-1"
+              />
             </div>
           </div>
           

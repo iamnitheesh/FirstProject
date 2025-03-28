@@ -57,6 +57,7 @@ export default function Home() {
     title: '',
     description: '',
     primaryColor: '',
+    backgroundImage: '',
   });
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,6 +152,7 @@ export default function Home() {
       title: set.title,
       description: set.description || '',
       primaryColor: set.primaryColor || '#3b82f6',
+      backgroundImage: set.backgroundImage || '',
     });
     setEditModalOpen(true);
   };
@@ -483,33 +485,58 @@ export default function Home() {
                         <CardContent className={`p-0 cursor-pointer ${viewMode === 'list' ? 'flex' : ''}`}>
                           {viewMode === 'grid' ? (
                             <>
-                              <div 
-                                className="h-2 w-full" 
-                                style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
-                              ></div>
-                              <div className="p-5">
-                                <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                                  {set.title}
-                                </h3>
-                                {set.description && (
-                                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                    {set.description}
-                                  </p>
-                                )}
-                                {set.tags && set.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-2">
-                                    {set.tags.map((tag, i) => (
-                                      <span
-                                        key={i}
-                                        className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
-                                      >
-                                        {tag}
-                                      </span>
-                                    ))}
+                              {set.backgroundImage ? (
+                                <div 
+                                  className="h-32 w-full bg-cover bg-center relative overflow-hidden"
+                                  style={{ 
+                                    backgroundImage: `url(${set.backgroundImage})`,
+                                    borderBottom: `2px solid ${set.primaryColor || '#3b82f6'}`
+                                  }}
+                                >
+                                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.7)] flex flex-col justify-end p-4">
+                                    <h3 className="text-lg font-semibold mb-1 text-white">
+                                      {set.title}
+                                    </h3>
+                                    {set.description && (
+                                      <p className="text-sm text-white/80 line-clamp-1">
+                                        {set.description}
+                                      </p>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                              <div className="p-4 bg-gray-50 flex justify-between text-xs text-gray-500">
+                                </div>
+                              ) : (
+                                <>
+                                  <div 
+                                    className="h-2 w-full" 
+                                    style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
+                                  ></div>
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                                      {set.title}
+                                    </h3>
+                                    {set.description && (
+                                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                                        {set.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                              
+                              {set.tags && set.tags.length > 0 && (
+                                <div className={`flex flex-wrap gap-1 ${set.backgroundImage ? 'px-4 pt-3 pb-2' : 'mt-2 px-5'}`}>
+                                  {set.tags.map((tag, i) => (
+                                    <span
+                                      key={i}
+                                      className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <div className="p-4 bg-gray-50 flex justify-between text-xs text-gray-500 mt-auto">
                                 <span>Created: {formatDate(set.createdAt)}</span>
                                 <span>Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
                               </div>
@@ -576,7 +603,7 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle>Edit Flashcard Set</DialogTitle>
             <DialogDescription>
-              Update the title, description, or color of your flashcard set.
+              Update the title, description, color, or add a background image to your flashcard set.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -621,6 +648,18 @@ export default function Home() {
                   ></div>
                 ))}
               </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="backgroundImage" className="text-right">
+                Background Image
+              </Label>
+              <Input
+                id="backgroundImage"
+                value={editForm.backgroundImage}
+                onChange={(e) => setEditForm({ ...editForm, backgroundImage: e.target.value })}
+                className="col-span-3"
+                placeholder="Enter image URL (optional)"
+              />
             </div>
           </div>
           <DialogFooter>

@@ -21,6 +21,7 @@ export const flashcardSets = pgTable("flashcard_sets", {
   description: text("description"),
   tags: text("tags").array(),
   primaryColor: text("primary_color").default("#3b82f6"),
+  backgroundImage: text("background_image"),
   createdAt: timestamp("created_at").defaultNow(),
   lastAccessed: timestamp("last_accessed"),
   userId: integer("user_id").references(() => users.id),
