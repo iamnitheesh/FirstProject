@@ -3,6 +3,36 @@ import { Workbox } from 'workbox-window';
 // Variable to store service worker registration
 let swRegistration: ServiceWorkerRegistration | null = null;
 
+// List of external libraries to cache for offline use
+const EXTERNAL_LIBRARIES = [
+  // KaTeX for math rendering
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js',
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js',
+  
+  // Fonts
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  
+  // Core libraries
+  'https://cdn.jsdelivr.net/npm/idb@7.1.1/build/umd.min.js'
+];
+
+/**
+ * Preload and cache external resources for offline use
+ */
+function preloadExternalResources() {
+  if (!navigator.onLine) return; // Skip if offline
+  
+  console.log('Preloading external resources for offline use...');
+  
+  // Fetch all resources to add them to the cache
+  EXTERNAL_LIBRARIES.forEach(url => {
+    fetch(url, { mode: 'no-cors' })
+      .then(() => console.log(`Cached: ${url}`))
+      .catch(err => console.warn(`Failed to cache: ${url}`, err));
+  });
+}
+
 /**
  * Register the service worker
  */
@@ -21,6 +51,9 @@ export function registerServiceWorker() {
             
             // Listen for service worker updates
             setupSWUpdateListener(wb);
+            
+            // Preload external resources
+            preloadExternalResources();
           }
         })
         .catch(error => {
@@ -36,6 +69,9 @@ export function registerServiceWorker() {
       if (event.data.type === 'SYNC_COMPLETED') {
         console.log('Background sync completed');
         // Notify any listeners about sync completion
+        window.dispatchEvent(new CustomEvent('syncCompleted', { 
+          detail: { success: event.data.success } 
+        }));
       }
     });
   } else {

@@ -1,4 +1,4 @@
-// Service Worker for MathCards Application
+// Service Worker for FormulaNote Application
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
 
 // Configure workbox
@@ -8,12 +8,55 @@ workbox.setConfig({
 
 // Use precache to cache important files
 workbox.precaching.precacheAndRoute([
-  { url: '/', revision: '1' },
-  { url: '/index.html', revision: '1' },
-  { url: '/manifest.json', revision: '1' },
+  { url: '/', revision: '2' },
+  { url: '/index.html', revision: '2' },
+  { url: '/manifest.json', revision: '2' },
   { url: '/favicon.ico', revision: '1' },
-  // Add images, scripts and styles as needed
+  { url: '/icons/icon-192x192.png', revision: '1' },
+  { url: '/icons/icon-512x512.png', revision: '1' }
 ]);
+
+// Cache external dependencies
+workbox.routing.registerRoute(
+  ({url}) => url.origin === 'https://cdn.jsdelivr.net',
+  new workbox.strategies.CacheFirst({
+    cacheName: 'external-libs',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 30,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+      }),
+    ],
+  })
+);
+
+// Cache Google Fonts stylesheets
+workbox.routing.registerRoute(
+  ({url}) => url.origin === 'https://fonts.googleapis.com',
+  new workbox.strategies.CacheFirst({
+    cacheName: 'google-fonts-stylesheets',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 10,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+      }),
+    ],
+  })
+);
+
+// Cache KaTeX resources (for math rendering)
+workbox.routing.registerRoute(
+  ({url}) => url.origin === 'https://cdn.jsdelivr.net' && url.pathname.includes('/katex/'),
+  new workbox.strategies.CacheFirst({
+    cacheName: 'katex-resources',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 20,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+      }),
+    ],
+  })
+);
 
 // Cache images
 workbox.routing.registerRoute(

@@ -186,7 +186,21 @@ export class MemStorage implements IStorage {
 
   // FlashcardSet methods
   async getFlashcardSets(): Promise<FlashcardSet[]> {
-    return Array.from(this.flashcardSets.values());
+    const sets = Array.from(this.flashcardSets.values());
+    // Enrich with additional data
+    return Promise.all(sets.map(async (set) => {
+      const cards = await this.getFlashcards(set.id);
+      const totalCards = cards.length;
+      // Calculate a mock progress based on created date (for demo purposes)
+      // In a real app, this would track actual study progress
+      const progress = totalCards > 0 ? Math.min(0.75, Math.random() * 0.8) : 0;
+      
+      return {
+        ...set,
+        totalCards,
+        progress
+      } as any;
+    }));
   }
 
   async getFlashcardSetsByUserId(userId: number): Promise<FlashcardSet[]> {
@@ -196,7 +210,20 @@ export class MemStorage implements IStorage {
   }
 
   async getFlashcardSet(id: number): Promise<FlashcardSet | undefined> {
-    return this.flashcardSets.get(id);
+    const set = this.flashcardSets.get(id);
+    if (!set) return undefined;
+    
+    // Enrich with additional data
+    const cards = await this.getFlashcards(set.id);
+    const totalCards = cards.length;
+    // Calculate a mock progress based on created date (for demo purposes)
+    const progress = totalCards > 0 ? Math.min(0.75, Math.random() * 0.8) : 0;
+    
+    return {
+      ...set,
+      totalCards,
+      progress
+    } as any;
   }
 
   async createFlashcardSet(set: InsertFlashcardSet): Promise<FlashcardSet> {
@@ -213,7 +240,10 @@ export class MemStorage implements IStorage {
       lastAccessed: new Date() 
     };
     this.flashcardSets.set(id, newSet);
-    return newSet;
+    
+    // Return enriched data
+    const enrichedSet = await this.getFlashcardSet(id);
+    return enrichedSet as FlashcardSet;
   }
 
   async updateFlashcardSet(id: number, set: Partial<InsertFlashcardSet>): Promise<FlashcardSet | undefined> {
@@ -222,7 +252,9 @@ export class MemStorage implements IStorage {
 
     const updatedSet: FlashcardSet = { ...existingSet, ...set };
     this.flashcardSets.set(id, updatedSet);
-    return updatedSet;
+    
+    // Return enriched data
+    return this.getFlashcardSet(id);
   }
 
   async deleteFlashcardSet(id: number): Promise<boolean> {

@@ -8,6 +8,19 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/helpers';
 import type { FlashcardSet } from '@shared/schema';
+
+/**
+ * Adjust a hex color by the given percentage
+ * @param color - Hex color code
+ * @param amount - Amount to adjust (-100 to 100)
+ * @returns Adjusted hex color
+ */
+function adjustColor(color: string, amount: number): string {
+  return color.replace(/^#/, '').replace(/.{1,2}/g, (c) => {
+    const value = Math.min(255, Math.max(0, parseInt(c, 16) + amount));
+    return value.toString(16).padStart(2, '0');
+  }).replace(/^/, '#');
+}
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -44,7 +57,12 @@ import {
   Save,
   BookMarked,
   Download,
-  Upload
+  Upload,
+  BookOpen,
+  LayoutDashboard,
+  ClipboardList,
+  CheckCircle2,
+  Clock8
 } from 'lucide-react';
 
 export default function Home() {
@@ -428,15 +446,15 @@ export default function Home() {
                 </div>
               ) : (
                 <div className={viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" 
-                  : "space-y-3 sm:space-y-4"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" 
+                  : "space-y-4 sm:space-y-5"
                 }>
                   {filteredAndSortedSets.map((set) => (
                     <Card 
                       key={set.id}
-                      className={`shadow-sm hover:shadow-md transition-all overflow-hidden relative group ${
+                      className={`shadow hover:shadow-lg transition-all overflow-hidden relative group ${
                         viewMode === 'list' ? 'flex' : ''
-                      }`}
+                      } hover:translate-y-[-2px] duration-300`}
                     >
                       <div className="absolute top-2 right-2 z-10">
                         <DropdownMenu>
@@ -487,7 +505,7 @@ export default function Home() {
                             <>
                               {set.backgroundImage ? (
                                 <div 
-                                  className="h-32 w-full bg-cover bg-center relative overflow-hidden"
+                                  className="h-40 w-full bg-cover bg-center relative overflow-hidden"
                                   style={{ 
                                     backgroundImage: `url(${set.backgroundImage})`,
                                     borderBottom: `2px solid ${set.primaryColor || '#3b82f6'}`
@@ -505,22 +523,23 @@ export default function Home() {
                                   </div>
                                 </div>
                               ) : (
-                                <>
-                                  <div 
-                                    className="h-2 w-full" 
-                                    style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
-                                  ></div>
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                                      {set.title}
-                                    </h3>
-                                    {set.description && (
-                                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                        {set.description}
-                                      </p>
-                                    )}
+                                <div 
+                                  className="h-40 w-full flex flex-col justify-end p-4 relative overflow-hidden"
+                                  style={{ 
+                                    backgroundColor: set.primaryColor || '#3b82f6',
+                                    backgroundImage: set.primaryColor 
+                                      ? `linear-gradient(135deg, ${set.primaryColor}, ${adjustColor(set.primaryColor, -30)})`
+                                      : 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                  }}
+                                >
+                                  <div className="absolute top-3 right-3 bg-white/20 rounded-full p-1">
+                                    <BookOpen className="h-5 w-5 text-white" />
                                   </div>
-                                </>
+                                  <h3 className="text-white text-xl font-bold line-clamp-1">{set.title}</h3>
+                                  {set.description && (
+                                    <p className="text-white/90 text-sm line-clamp-2 mt-1">{set.description}</p>
+                                  )}
+                                </div>
                               )}
                               
                               {set.tags && set.tags.length > 0 && (
@@ -536,9 +555,32 @@ export default function Home() {
                                 </div>
                               )}
                               
-                              <div className="p-4 bg-gray-50 flex justify-between text-xs text-gray-500 mt-auto">
-                                <span>Created: {formatDate(set.createdAt)}</span>
-                                <span>Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
+                              <div className="p-4 bg-gray-50 mt-auto">
+                                <div className="flex justify-between items-center mb-2 text-xs text-gray-500">
+                                  <span className="flex items-center">
+                                    <ClipboardList className="h-3.5 w-3.5 mr-1 text-primary" />
+                                    {(set as any).totalCards || 0} {(set as any).totalCards === 1 ? 'card' : 'cards'}
+                                  </span>
+                                  <span className="flex items-center">
+                                    <Clock8 className="h-3.5 w-3.5 mr-1" />
+                                    {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never used'}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center">
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                      className="bg-primary h-2 rounded-full" 
+                                      style={{ 
+                                        width: `${Math.min(((set as any).progress || 0) * 100, 100)}%`,
+                                        backgroundColor: set.primaryColor || undefined
+                                      }}
+                                    ></div>
+                                  </div>
+                                  <div className="ml-2 text-xs text-gray-500">
+                                    {Math.round(((set as any).progress || 0) * 100)}%
+                                  </div>
+                                </div>
                               </div>
                             </>
                           ) : (
