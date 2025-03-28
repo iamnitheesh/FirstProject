@@ -1,0 +1,52 @@
+{
+  "name": "MathCards - Customizable Math Flashcards",
+  "short_name": "MathCards",
+  "description": "Create and study customizable math flashcards with LaTeX support",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Create New Set",
+      "short_name": "New Set",
+      "description": "Create a new flashcard set",
+      "url": "/?action=new-set"
+    },
+    {
+      "name": "Study Mode",
+      "short_name": "Study",
+      "description": "Enter study mode",
+      "url": "/study"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "permissions": [
+    "storage"
+  ]
+}

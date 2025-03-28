@@ -9,6 +9,8 @@ import StudyMode from "@/pages/StudyMode";
 import TestMode from "@/pages/TestMode";
 import Settings from "@/pages/Settings";
 import { useState } from "react";
+import { DeviceProvider } from "@/components/DeviceContext";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 function Router() {
   return (
@@ -26,8 +28,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <DeviceProvider>
+        <Router />
+        <PwaInstallPrompt />
+        <Toaster />
+      </DeviceProvider>
     </QueryClientProvider>
   );
 }

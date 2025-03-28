@@ -428,8 +428,8 @@ export default function Home() {
                 </div>
               ) : (
                 <div className={viewMode === 'grid' 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
-                  : "space-y-4"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" 
+                  : "space-y-3 sm:space-y-4"
                 }>
                   {filteredAndSortedSets.map((set) => (
                     <Card 
@@ -441,7 +441,7 @@ export default function Home() {
                       <div className="absolute top-2 right-2 z-10">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

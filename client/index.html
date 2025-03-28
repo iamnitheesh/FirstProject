@@ -2,7 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#3b82f6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="MathCards - Create and study customizable math flashcards with LaTeX support">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MathCards">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
   <title>MathCards - Customizable Math Flashcards</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/tex.css" crossorigin="anonymous">
@@ -24,6 +33,42 @@
     }
     .card-flipped .card-back {
       transform: rotateY(0deg);
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      /* Larger touch targets for mobile */
+      button, .clickable {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* Remove hover effects on mobile */
+      @media (hover: none) {
+        .hover-only {
+          display: none !important;
+        }
+      }
+      
+      /* Prevent text selection on touch interfaces */
+      .no-select {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Fix for mobile browser address bar height changes */
+      html, body {
+        height: -webkit-fill-available;
+      }
+      
+      /* Better scrolling on iOS */
+      .scroll-container {
+        -webkit-overflow-scrolling: touch;
+      }
     }
   </style>
 </head>

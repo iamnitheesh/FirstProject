@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDevice } from './DeviceContext';
 import SetCreationModal from './SetCreationModal';
 import { formatDate } from '@/lib/helpers';
 import type { FlashcardSet } from '@shared/schema';
@@ -16,7 +17,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu } from 'lucide-react';
+import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu, Smartphone, Download } from 'lucide-react';
+import { ShareApp } from './ShareApp';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -205,17 +207,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </Button>
                 </Link>
                 
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start"
-                  onClick={() => {
-                    alert("In a production environment, this would build and generate an Android APK file that includes all your current flashcard sets. The APK would be configured to request storage permissions for saving updates and new sets.");
-                  }}
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  <span>Share App (APK)</span>
-                </Button>
+                <ShareApp />
               </div>
             </div>
           </div>
