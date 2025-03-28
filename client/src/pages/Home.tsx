@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
@@ -28,7 +28,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { queryClient } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
-import { MoreHorizontal, Pencil, Trash, Copy, MoveRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { 
+  MoreHorizontal, 
+  Pencil, 
+  Trash, 
+  Copy, 
+  MoveRight, 
+  Search, 
+  SortAsc, 
+  Clock, 
+  Grid3X3, 
+  List, 
+  Save,
+  BookMarked,
+  Download,
+  Upload
+} from 'lucide-react';
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,11 +59,88 @@ export default function Home() {
     primaryColor: '',
   });
   const [, navigate] = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'alphabetical' | 'lastEdited' | 'recentlyUsed'>('lastEdited');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => {
+    // Load auto-save preference from localStorage
+    const savedPreference = localStorage.getItem('autoSaveEnabled');
+    return savedPreference ? JSON.parse(savedPreference) : true;
+  });
   
   // Fetch all flashcard sets
   const { data: sets = [], isLoading } = useQuery<FlashcardSet[]>({
     queryKey: ['/api/sets'],
   });
+  
+  // Toggle auto-save functionality
+  const toggleAutoSave = () => {
+    const newValue = !autoSaveEnabled;
+    setAutoSaveEnabled(newValue);
+    localStorage.setItem('autoSaveEnabled', JSON.stringify(newValue));
+    
+    toast({
+      title: newValue ? 'Auto-save enabled' : 'Auto-save disabled',
+      description: newValue 
+        ? 'Your flashcards will be automatically saved to local storage' 
+        : 'Changes will only be saved when you manually save',
+    });
+  };
+  
+  // Effect to store sets in localStorage whenever they change (auto-save)
+  useEffect(() => {
+    if (autoSaveEnabled && sets.length > 0) {
+      try {
+        localStorage.setItem('savedFlashcardSets', JSON.stringify(sets));
+        console.log('Auto-saved flashcard sets to local storage');
+      } catch (error) {
+        console.error('Error auto-saving to localStorage:', error);
+      }
+    }
+  }, [sets, autoSaveEnabled]);
+  
+  // Manually save all data to local storage
+  const saveAllData = () => {
+    try {
+      localStorage.setItem('savedFlashcardSets', JSON.stringify(sets));
+      toast({
+        title: 'Data saved',
+        description: 'All flashcard sets have been saved to your device storage',
+      });
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      toast({
+        title: 'Save failed',
+        description: 'Failed to save data to device storage. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Filter and sort flashcard sets
+  const filteredAndSortedSets = sets
+    .filter(set => {
+      if (!searchQuery) return true;
+      return (
+        set.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (set.description && set.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (set.tags && set.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'alphabetical') {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === 'lastEdited') {
+        // Use createdAt since updatedAt is not available in the current schema
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      } else {
+        const dateA = a.lastAccessed ? new Date(a.lastAccessed) : new Date(0);
+        const dateB = b.lastAccessed ? new Date(b.lastAccessed) : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      }
+    });
   
   // Function to handle editing a set
   const handleEditSet = (set: FlashcardSet, e: React.MouseEvent) => {
@@ -204,7 +298,113 @@ export default function Home() {
             </div>
           ) : (
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Flashcard Sets</h2>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Your Flashcard Sets</h2>
+                
+                {/* Auto-save toggle */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1"
+                    onClick={saveAllData}
+                  >
+                    <Save className="h-4 w-4" /> Save All
+                  </Button>
+                  
+                  <Button 
+                    variant={autoSaveEnabled ? "default" : "outline"} 
+                    size="sm" 
+                    className="flex items-center gap-1"
+                    onClick={toggleAutoSave}
+                  >
+                    {autoSaveEnabled ? (
+                      <>
+                        <i className="ri-checkbox-circle-line"></i> Auto-save On
+                      </>
+                    ) : (
+                      <>
+                        <i className="ri-checkbox-blank-circle-line"></i> Auto-save Off
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Search and sort controls */}
+              <div className="bg-white p-3 rounded-lg shadow-sm mb-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search flashcard sets..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 w-full"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Select
+                      value={sortBy}
+                      onValueChange={(value: any) => setSortBy(value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <div className="flex items-center gap-1">
+                          <SortAsc className="h-4 w-4" />
+                          <span>Sort by</span>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alphabetical">A-Z (Alphabetical)</SelectItem>
+                        <SelectItem value="lastEdited">Last Edited</SelectItem>
+                        <SelectItem value="recentlyUsed">Recently Used</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <div className="flex border rounded-md overflow-hidden">
+                      <Button
+                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                        size="sm"
+                        className="rounded-none"
+                        onClick={() => setViewMode('grid')}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === 'list' ? 'default' : 'ghost'}
+                        size="sm"
+                        className="rounded-none"
+                        onClick={() => setViewMode('list')}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {filteredAndSortedSets.length === 0 && searchQuery && (
+                  <div className="mt-2 text-sm text-gray-500">
+                    No flashcard sets found matching "{searchQuery}". Try a different search term.
+                  </div>
+                )}
+                
+                {searchQuery && filteredAndSortedSets.length > 0 && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Badge variant="outline" className="px-2 py-1">
+                      {filteredAndSortedSets.length} {filteredAndSortedSets.length === 1 ? 'result' : 'results'}
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Clear search
+                    </Button>
+                  </div>
+                )}
+              </div>
               
               {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -225,11 +425,16 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {sets.map((set) => (
+                <div className={viewMode === 'grid' 
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
+                  : "space-y-4"
+                }>
+                  {filteredAndSortedSets.map((set) => (
                     <Card 
                       key={set.id}
-                      className="shadow-sm hover:shadow-md transition-all overflow-hidden relative group"
+                      className={`shadow-sm hover:shadow-md transition-all overflow-hidden relative group ${
+                        viewMode === 'list' ? 'flex' : ''
+                      }`}
                     >
                       <div className="absolute top-2 right-2 z-10">
                         <DropdownMenu>
@@ -274,38 +479,80 @@ export default function Home() {
                         </DropdownMenu>
                       </div>
                       
-                      <Link href={`/sets/${set.id}`}>
-                        <CardContent className="p-0 cursor-pointer">
-                          <div 
-                            className="h-2 w-full" 
-                            style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
-                          ></div>
-                          <div className="p-5">
-                            <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                              {set.title}
-                            </h3>
-                            {set.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                {set.description}
-                              </p>
-                            )}
-                            {set.tags && set.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {set.tags.map((tag, i) => (
-                                  <span
-                                    key={i}
-                                    className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
+                      <Link href={`/sets/${set.id}`} className={viewMode === 'list' ? 'flex-1' : ''}>
+                        <CardContent className={`p-0 cursor-pointer ${viewMode === 'list' ? 'flex' : ''}`}>
+                          {viewMode === 'grid' ? (
+                            <>
+                              <div 
+                                className="h-2 w-full" 
+                                style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
+                              ></div>
+                              <div className="p-5">
+                                <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                                  {set.title}
+                                </h3>
+                                {set.description && (
+                                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                                    {set.description}
+                                  </p>
+                                )}
+                                {set.tags && set.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {set.tags.map((tag, i) => (
+                                      <span
+                                        key={i}
+                                        className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          <div className="p-4 bg-gray-50 flex justify-between text-xs text-gray-500">
-                            <span>Created: {formatDate(set.createdAt)}</span>
-                            <span>Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
-                          </div>
+                              <div className="p-4 bg-gray-50 flex justify-between text-xs text-gray-500">
+                                <span>Created: {formatDate(set.createdAt)}</span>
+                                <span>Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div 
+                                className="w-2 h-full flex-shrink-0" 
+                                style={{ backgroundColor: set.primaryColor || '#3b82f6' }}
+                              ></div>
+                              <div className="p-4 flex-1">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                      {set.title}
+                                    </h3>
+                                    {set.description && (
+                                      <p className="text-sm text-gray-600 line-clamp-1 mt-1">
+                                        {set.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-gray-500 flex flex-col items-end">
+                                    <span>Created: {formatDate(set.createdAt)}</span>
+                                    <span className="mt-1">Last used: {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never'}</span>
+                                  </div>
+                                </div>
+                                
+                                {set.tags && set.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {set.tags.map((tag, i) => (
+                                      <span
+                                        key={i}
+                                        className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
                         </CardContent>
                       </Link>
                     </Card>

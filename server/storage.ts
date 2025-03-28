@@ -25,6 +25,10 @@ export interface IStorage {
   updateFlashcardSet(id: number, set: Partial<InsertFlashcardSet>): Promise<FlashcardSet | undefined>;
   deleteFlashcardSet(id: number): Promise<boolean>;
   updateLastAccessed(id: number): Promise<boolean>;
+  
+  // Data persistence operations
+  saveAllData(): Promise<boolean>;
+  loadSavedData(): Promise<boolean>;
 
   // Flashcard operations
   getFlashcards(setId: number): Promise<Flashcard[]>;
@@ -50,8 +54,67 @@ export class MemStorage implements IStorage {
     this.currentSetId = 1;
     this.currentCardId = 1;
 
-    // Initialize with example data
-    this.initializeExampleData();
+    // Load data from localStorage if available, otherwise initialize with examples
+    const hasLoadedData = this.tryLoadingFromLocalStorage();
+    if (!hasLoadedData) {
+      // Initialize with example data only if no saved data exists
+      this.initializeExampleData();
+    }
+  }
+  
+  private tryLoadingFromLocalStorage(): boolean {
+    try {
+      // Only run this code in a browser environment (when localStorage is available)
+      if (typeof localStorage !== 'undefined') {
+        const savedSetsData = localStorage.getItem('savedFlashcardSets');
+        const savedCardsData = localStorage.getItem('savedFlashcards');
+        
+        if (savedSetsData) {
+          const parsedSets = JSON.parse(savedSetsData) as FlashcardSet[];
+          if (Array.isArray(parsedSets) && parsedSets.length > 0) {
+            // Find the highest ID to update our counter
+            let maxSetId = 0;
+            parsedSets.forEach(set => {
+              // Convert string dates to Date objects
+              const convertedSet = {
+                ...set,
+                createdAt: set.createdAt ? new Date(set.createdAt) : null,
+                lastAccessed: set.lastAccessed ? new Date(set.lastAccessed) : null
+              };
+              this.flashcardSets.set(set.id, convertedSet);
+              maxSetId = Math.max(maxSetId, set.id);
+            });
+            
+            this.currentSetId = maxSetId + 1;
+            
+            // If we have sets but no cards, try loading cards as well
+            if (savedCardsData) {
+              const parsedCards = JSON.parse(savedCardsData) as Flashcard[];
+              if (Array.isArray(parsedCards) && parsedCards.length > 0) {
+                let maxCardId = 0;
+                parsedCards.forEach(card => {
+                  // Convert string date to Date object
+                  const convertedCard = {
+                    ...card,
+                    createdAt: card.createdAt ? new Date(card.createdAt) : new Date()
+                  };
+                  this.flashcards.set(card.id, convertedCard);
+                  maxCardId = Math.max(maxCardId, card.id);
+                });
+                
+                this.currentCardId = maxCardId + 1;
+              }
+            }
+            
+            return true; // Successfully loaded data
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data from localStorage:', error);
+    }
+    
+    return false; // Failed to load or no data available
   }
 
   private initializeExampleData() {
@@ -73,10 +136,10 @@ export class MemStorage implements IStorage {
       id: this.currentCardId++,
       question: "Find the derivative of \\(f(x) = x^2 \\sin(x)\\).",
       options: [
-        { text: "\\(f'(x) = 2x \\sin(x) + x^2 \\cos(x)\\)", isCorrect: true },
-        { text: "\\(f'(x) = 2x \\sin(x)\\)", isCorrect: false },
-        { text: "\\(f'(x) = x^2 \\cos(x)\\)", isCorrect: false },
-        { text: "\\(f'(x) = 2x \\sin(x) - x^2 \\cos(x)\\)", isCorrect: false }
+        { text: "\\(f'(x) = 2x \\sin(x) + x^2 \\cos(x)\\)", isCorrect: true, isMultipleSelect: false },
+        { text: "\\(f'(x) = 2x \\sin(x)\\)", isCorrect: false, isMultipleSelect: false },
+        { text: "\\(f'(x) = x^2 \\cos(x)\\)", isCorrect: false, isMultipleSelect: false },
+        { text: "\\(f'(x) = 2x \\sin(x) - x^2 \\cos(x)\\)", isCorrect: false, isMultipleSelect: false }
       ],
       explanation: "Using the product rule: \\(f'(x) = 2x \\sin(x) + x^2 \\cos(x)\\)",
       imageUrl: null,
@@ -89,10 +152,10 @@ export class MemStorage implements IStorage {
       id: this.currentCardId++,
       question: "Evaluate the indefinite integral \\(\\int x e^x dx\\).",
       options: [
-        { text: "\\(x e^x - e^x + C\\)", isCorrect: true },
-        { text: "\\(x e^x + C\\)", isCorrect: false },
-        { text: "\\(e^x(x-1) + C\\)", isCorrect: false },
-        { text: "\\(\\frac{x^2}{2}e^x + C\\)", isCorrect: false }
+        { text: "\\(x e^x - e^x + C\\)", isCorrect: true, isMultipleSelect: false },
+        { text: "\\(x e^x + C\\)", isCorrect: false, isMultipleSelect: false },
+        { text: "\\(e^x(x-1) + C\\)", isCorrect: false, isMultipleSelect: false },
+        { text: "\\(\\frac{x^2}{2}e^x + C\\)", isCorrect: false, isMultipleSelect: false }
       ],
       explanation: "Using integration by parts with \\(u = x\\) and \\(dv = e^x dx\\)",
       imageUrl: null,
@@ -138,8 +201,12 @@ export class MemStorage implements IStorage {
   async createFlashcardSet(set: InsertFlashcardSet): Promise<FlashcardSet> {
     const id = this.currentSetId++;
     const newSet: FlashcardSet = { 
-      ...set, 
       id, 
+      title: set.title,
+      description: set.description || null,
+      tags: set.tags || null,
+      primaryColor: set.primaryColor || null, 
+      userId: set.userId || null,
       createdAt: new Date(),
       lastAccessed: new Date() 
     };
@@ -191,7 +258,29 @@ export class MemStorage implements IStorage {
 
   async createFlashcard(card: InsertFlashcard): Promise<Flashcard> {
     const id = this.currentCardId++;
-    const newCard: Flashcard = { ...card, id, createdAt: new Date() };
+    
+    // Ensure options is properly typed as Option[]
+    const safeOptions: Option[] = Array.isArray(card.options) 
+      ? card.options.map((opt: unknown) => {
+          const safeOpt = (typeof opt === 'object' && opt !== null) ? opt : {};
+          return {
+            text: (safeOpt as any).text || '',
+            isCorrect: Boolean((safeOpt as any).isCorrect),
+            isMultipleSelect: Boolean((safeOpt as any).isMultipleSelect)
+          };
+        })
+      : [];
+    
+    const newCard: Flashcard = { 
+      id, 
+      question: card.question,
+      options: safeOptions,
+      explanation: card.explanation || null,
+      imageUrl: card.imageUrl || null,
+      setId: card.setId,
+      createdAt: new Date() 
+    };
+    
     this.flashcards.set(id, newCard);
     
     // Update lastAccessed on the set
@@ -204,7 +293,30 @@ export class MemStorage implements IStorage {
     const existingCard = this.flashcards.get(id);
     if (!existingCard) return undefined;
 
-    const updatedCard: Flashcard = { ...existingCard, ...card };
+    // Process options safely if provided
+    let updatedOptions = existingCard.options;
+    if (card.options !== undefined) {
+      // Ensure options is properly typed as Option[]
+      updatedOptions = card.options.map((opt: unknown) => {
+        const safeOpt = (typeof opt === 'object' && opt !== null) ? opt : {};
+        return {
+          text: (safeOpt as any).text || '',
+          isCorrect: Boolean((safeOpt as any).isCorrect),
+          isMultipleSelect: Boolean((safeOpt as any).isMultipleSelect)
+        };
+      });
+    }
+
+    // Handle each property explicitly
+    const updatedCard: Flashcard = { 
+      ...existingCard,
+      question: card.question !== undefined ? card.question : existingCard.question,
+      options: updatedOptions,
+      explanation: card.explanation !== undefined ? card.explanation : existingCard.explanation,
+      imageUrl: card.imageUrl !== undefined ? card.imageUrl : existingCard.imageUrl,
+      setId: card.setId !== undefined ? card.setId : existingCard.setId,
+    };
+    
     this.flashcards.set(id, updatedCard);
     
     // Update lastAccessed on the set
@@ -222,6 +334,32 @@ export class MemStorage implements IStorage {
     }
     
     return this.flashcards.delete(id);
+  }
+  
+  // Data persistence methods
+  async saveAllData(): Promise<boolean> {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        // Save flashcard sets
+        const sets = Array.from(this.flashcardSets.values());
+        localStorage.setItem('savedFlashcardSets', JSON.stringify(sets));
+        
+        // Save flashcards
+        const cards = Array.from(this.flashcards.values());
+        localStorage.setItem('savedFlashcards', JSON.stringify(cards));
+        
+        console.log('Saved all data to localStorage');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error saving data to localStorage:', error);
+      return false;
+    }
+  }
+  
+  async loadSavedData(): Promise<boolean> {
+    return this.tryLoadingFromLocalStorage();
   }
 }
 

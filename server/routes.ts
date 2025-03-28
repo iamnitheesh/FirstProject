@@ -46,6 +46,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newSet = await storage.createFlashcardSet(validatedData.data);
+      // Auto-save data after creation
+      await storage.saveAllData();
       res.status(201).json(newSet);
     } catch (error) {
       res.status(500).json({ message: "Error creating flashcard set" });
@@ -72,6 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Flashcard set not found" });
       }
       
+      // Auto-save data after update
+      await storage.saveAllData();
       res.json(updatedSet);
     } catch (error) {
       res.status(500).json({ message: "Error updating flashcard set" });
@@ -90,6 +94,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Flashcard set not found" });
       }
       
+      // Auto-save data after set deletion
+      await storage.saveAllData();
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ message: "Error deleting flashcard set" });
@@ -139,6 +145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newCard = await storage.createFlashcard(validatedData.data);
+      // Auto-save data after card creation
+      await storage.saveAllData();
       res.status(201).json(newCard);
     } catch (error) {
       res.status(500).json({ message: "Error creating flashcard" });
@@ -165,6 +173,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Flashcard not found" });
       }
       
+      // Auto-save data after card update
+      await storage.saveAllData();
       res.json(updatedCard);
     } catch (error) {
       res.status(500).json({ message: "Error updating flashcard" });
@@ -183,6 +193,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Flashcard not found" });
       }
       
+      // Auto-save data after card deletion
+      await storage.saveAllData();
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ message: "Error deleting flashcard" });
