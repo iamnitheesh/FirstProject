@@ -14,9 +14,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { FlashcardSet, InsertFlashcard, Option } from '@shared/schema';
 import { Pencil, Save, X, Check, FileText, Download, Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState('import');
+  // Get tab from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  
+  const [activeTab, setActiveTab] = useState(tabParam === 'export' ? 'appearance' : 'import');
   const [importText, setImportText] = useState('');
   const [importSetName, setImportSetName] = useState('');
   const [importSetDescription, setImportSetDescription] = useState('');
@@ -41,6 +46,11 @@ export default function Settings() {
     options: Array<{ text: string; isCorrect: boolean }>;
     explanation?: string;
   }>>([]);
+  
+  // Fetch all sets for export
+  const { data: sets = [] } = useQuery<FlashcardSet[]>({
+    queryKey: ['/api/sets'],
+  });
   
   const isMobile = useIsMobile();
   const { renderLatexString } = useLatexString(importText);
@@ -192,10 +202,16 @@ export default function Settings() {
 
     try {
       // First create a new flashcard set
-      const setResponse = await apiRequest('POST', '/api/sets', {
-        title: importSetName,
-        description: importSetDescription || "Imported from LaTeX",
-        primaryColor: "#3b82f6", // Default blue color
+      const setResponse = await fetch('/api/sets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: importSetName,
+          description: importSetDescription || "Imported from LaTeX",
+          primaryColor: "#3b82f6", // Default blue color
+        }),
       });
 
       if (!setResponse.ok) {
@@ -213,7 +229,13 @@ export default function Settings() {
           setId: newSet.id
         };
         
-        return apiRequest('POST', '/api/cards', cardData);
+        return fetch('/api/cards', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(cardData),
+        });
       });
       
       await Promise.all(creationPromises);
@@ -233,14 +255,16 @@ export default function Settings() {
       setImportSetDescription('');
       setParsedQuestions([]);
       
-      // Navigate to the new set (you might want to add navigation here)
-      window.location.href = `/sets/${newSet.id}`;
+      // Navigate to the new set
+      setTimeout(() => {
+        window.location.href = `/sets/${newSet.id}`;
+      }, 500);
       
     } catch (error: any) {
       console.error("Error importing flashcards:", error);
       toast({
         title: "Import failed",
-        description: "There was an error importing the flashcards. Please try again.",
+        description: error.message || "There was an error importing the flashcards. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -668,7 +692,7 @@ D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
                   <div className="flex justify-between items-center p-4 border rounded-md">
                     <div>
                       <h3 className="font-medium">Export All Sets to PDF</h3>
-                      <p className="text-sm text-muted-foreground">Generate a PDF document of all your flashcard sets</p>
+                      <p className="text-sm text-muted-foreground">Generate a PDF document of all your flashcard sets ({sets.length} sets available)</p>
                     </div>
                     <Button 
                       onClick={() => {
@@ -703,7 +727,7 @@ D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
                   <div className="flex justify-between items-center p-4 border rounded-md">
                     <div>
                       <h3 className="font-medium">Generate Android APK</h3>
-                      <p className="text-sm text-muted-foreground">Create a shareable Android app package</p>
+                      <p className="text-sm text-muted-foreground">Create a shareable Android app package with your flashcards</p>
                     </div>
                     <Button 
                       variant="secondary"
@@ -719,6 +743,65 @@ D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
                       Create APK
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed LaTeX Import Guide</CardTitle>
+                <CardDescription>
+                  Step-by-step instructions for formatting LaTeX imports
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+                  <h3 className="font-medium text-blue-800 mb-2">Complete LaTeX Import Format</h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Follow these step-by-step instructions to properly format your LaTeX content for importing:
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-white rounded p-3 border border-blue-100">
+                      <h4 className="font-medium text-blue-700 mb-1">Step 1: Format Your Questions</h4>
+                      <ul className="text-sm space-y-1 list-disc pl-5">
+                        <li>Begin each question with <code className="bg-blue-50 px-1 rounded"># Question [number]:</code> followed by an optional title</li>
+                        <li>The question text should follow on the next line(s)</li>
+                        <li>Use <code className="bg-blue-50 px-1 rounded">$...$</code> for inline math expressions</li>
+                        <li>Use <code className="bg-blue-50 px-1 rounded">$$...$$</code> for displayed math equations</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-white rounded p-3 border border-blue-100">
+                      <h4 className="font-medium text-blue-700 mb-1">Step 2: Format Your Options</h4>
+                      <ul className="text-sm space-y-1 list-disc pl-5">
+                        <li>List each option with a letter followed by closing parenthesis: <code className="bg-blue-50 px-1 rounded">A)</code>, <code className="bg-blue-50 px-1 rounded">B)</code>, etc.</li>
+                        <li>Add an asterisk <code className="bg-blue-50 px-1 rounded">*</code> before the letter to mark the correct answer: <code className="bg-blue-50 px-1 rounded">*C)</code></li>
+                        <li>Place each option on a new line</li>
+                        <li>You can use LaTeX math in options too: <code className="bg-blue-50 px-1 rounded">A) $\\int x^2 dx$</code></li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-white rounded p-3 border border-blue-100">
+                      <h4 className="font-medium text-blue-700 mb-1">Step 3: Separate Questions</h4>
+                      <ul className="text-sm space-y-1 list-disc pl-5">
+                        <li>Always separate questions with at least one blank line</li>
+                        <li>You can add explanations after the options (not currently supported in the parser)</li>
+                        <li>Make sure to use proper LaTeX syntax for all mathematical notations</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 border rounded p-4">
+                  <h3 className="font-medium mb-2">Troubleshooting Import Issues</h3>
+                  <ul className="text-sm space-y-2 list-disc pl-5">
+                    <li><strong>Missing or incorrectly formatted header:</strong> Make sure each question starts with '# Question' followed by a number</li>
+                    <li><strong>Option formatting:</strong> Each option must be on its own line with the format A), B), C), etc.</li>
+                    <li><strong>LaTeX syntax errors:</strong> Ensure all math expressions have matching opening and closing $ delimiters</li>
+                    <li><strong>Special characters:</strong> Some LaTeX commands require extra backslashes when pasted into the text area</li>
+                    <li><strong>Multiple correct answers:</strong> Only mark one option as correct with an asterisk (*)</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>

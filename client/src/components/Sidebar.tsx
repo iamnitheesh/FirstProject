@@ -165,28 +165,55 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <DropdownMenuLabel>Options</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   
-                  <Link href="/settings">
-                    <DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
-                    </DropdownMenuItem>
-                  </Link>
+                    </Link>
+                  </DropdownMenuItem>
                   
-                  <Link href="/help">
-                    <DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/help">
                       <HelpCircle className="mr-2 h-4 w-4" />
                       <span>Help & Support</span>
-                    </DropdownMenuItem>
-                  </Link>
+                    </Link>
+                  </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />
                   
-                  <Link href="/settings">
-                    <DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <div className="flex items-center" onClick={() => {
+                      const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                      if (theme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                      } else {
+                        document.documentElement.classList.remove('dark');
+                      }
+                      localStorage.setItem('theme', theme);
+                    }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                      </svg>
+                      <span>Toggle Dark Mode</span>
+                    </div>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings?tab=export">
                       <FileText className="mr-2 h-4 w-4" />
                       <span>Export All Sets to PDF</span>
-                    </DropdownMenuItem>
-                  </Link>
+                    </Link>
+                  </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => {
                     alert("In a production environment, this would build and generate an Android APK file that includes all your current flashcard sets. The APK would be configured to request storage permissions for saving updates and new sets.");
