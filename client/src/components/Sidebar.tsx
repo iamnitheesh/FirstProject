@@ -8,6 +8,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import SetCreationModal from './SetCreationModal';
 import { formatDate } from '@/lib/helpers';
 import type { FlashcardSet } from '@shared/schema';
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator 
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical, Settings, HelpCircle, FileText, Share2, Menu } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -143,25 +152,50 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             
             <Separator className="my-4" />
             
-            <div className="space-y-1">
-              <Link href="/settings">
-                <div className={`flex items-center w-full px-3 py-2 text-sm rounded-md cursor-pointer ${
-                  isActive(`/settings`) 
-                    ? 'bg-blue-50 text-primary' 
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}>
-                  <i className="ri-settings-4-line mr-2"></i>
-                  Settings
-                </div>
-              </Link>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-gray-700"
-              >
-                <i className="ri-question-line mr-2"></i>
-                Help & Support
-              </Button>
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Menu</span>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="px-2 h-8">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Options</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  <Link href="/settings">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  
+                  <Link href="/help">
+                    <DropdownMenuItem>
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Help & Support</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <Link href="/settings">
+                    <DropdownMenuItem>
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Export All Sets to PDF</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  
+                  <DropdownMenuItem onClick={() => {
+                    alert("In a production environment, this would build and generate an Android APK file that includes all your current flashcard sets. The APK would be configured to request storage permissions for saving updates and new sets.");
+                  }}>
+                    <Share2 className="mr-2 h-4 w-4" />
+                    <span>Share App (APK)</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </ScrollArea>

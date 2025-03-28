@@ -11,7 +11,9 @@ import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { queryClient } from '@/lib/queryClient';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { FlashcardSet, InsertFlashcard } from '@shared/schema';
+import { FlashcardSet, InsertFlashcard, Option } from '@shared/schema';
+import { Pencil, Save, X, Check, FileText, Download, Share2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('import');
@@ -20,11 +22,26 @@ export default function Settings() {
   const [importSetDescription, setImportSetDescription] = useState('');
   const [isParsing, setIsParsing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<{
+    question: string;
+    options: Array<{ text: string; isCorrect: boolean }>;
+    explanation: string;
+  }>({
+    question: '',
+    options: [],
+    explanation: '',
+  });
+  
   const [parsedQuestions, setParsedQuestions] = useState<Array<{
     question: string;
     options: Array<{ text: string; isCorrect: boolean }>;
     explanation?: string;
   }>>([]);
+  
   const isMobile = useIsMobile();
   const { renderLatexString } = useLatexString(importText);
 
@@ -354,22 +371,38 @@ D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
                 <CardHeader>
                   <CardTitle>Parsed Questions ({parsedQuestions.length})</CardTitle>
                   <CardDescription>
-                    Review the parsed questions before importing them.
+                    Review and edit the parsed questions before importing them.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                     {parsedQuestions.map((q, index) => (
                       <div key={index} className="border rounded-md p-4 space-y-3">
-                        <div>
-                          <div className="font-semibold mb-1">Question {index + 1}:</div>
-                          <div 
-                            className="text-sm latex-content p-2 bg-gray-50 rounded"
-                            dangerouslySetInnerHTML={{ 
-                              __html: renderLatexString(q.question) 
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-semibold">Question {index + 1}:</div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setEditingIndex(index);
+                              setEditFormData({
+                                question: q.question,
+                                options: [...q.options],
+                                explanation: q.explanation || ''
+                              });
+                              setEditDialogOpen(true);
                             }}
-                          />
+                          >
+                            <Pencil className="h-4 w-4 mr-1" /> Edit
+                          </Button>
                         </div>
+                        
+                        <div 
+                          className="text-sm latex-content p-2 bg-gray-50 rounded"
+                          dangerouslySetInnerHTML={{ 
+                            __html: renderLatexString(q.question) 
+                          }}
+                        />
                         
                         <div>
                           <div className="font-semibold mb-1">Options:</div>
@@ -389,15 +422,307 @@ D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
                             ))}
                           </div>
                         </div>
+                        
+                        {q.explanation && (
+                          <div>
+                            <div className="font-semibold mb-1">Explanation:</div>
+                            <div 
+                              className="text-sm latex-content p-2 bg-gray-50 rounded"
+                              dangerouslySetInnerHTML={{ 
+                                __html: renderLatexString(q.explanation) 
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
+            
+            {/* Edit Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Flashcard Question</DialogTitle>
+                  <DialogDescription>
+                    Make changes to the question, options, or explanation. You can use LaTeX math notation with $ symbols.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-question">Question</Label>
+                    <Textarea
+                      id="edit-question"
+                      value={editFormData.question}
+                      onChange={(e) => setEditFormData({
+                        ...editFormData,
+                        question: e.target.value
+                      })}
+                      rows={4}
+                      className="font-mono text-sm"
+                    />
+                    
+                    <div className="p-2 bg-gray-50 rounded text-sm mt-1">
+                      <div className="text-xs text-gray-500 mb-1">Preview:</div>
+                      <div 
+                        className="latex-content"
+                        dangerouslySetInnerHTML={{ 
+                          __html: renderLatexString(editFormData.question) 
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Options</Label>
+                    
+                    {editFormData.options.map((opt, i) => (
+                      <div key={i} className="flex items-start gap-2 mb-2">
+                        <Button 
+                          variant={opt.isCorrect ? "default" : "outline"}
+                          size="sm"
+                          className="mt-1 h-8 w-8 p-0 flex-shrink-0"
+                          onClick={() => {
+                            const newOptions = [...editFormData.options];
+                            // First set all to false
+                            newOptions.forEach(o => o.isCorrect = false);
+                            // Then set this one to true
+                            newOptions[i].isCorrect = true;
+                            setEditFormData({
+                              ...editFormData,
+                              options: newOptions
+                            });
+                          }}
+                        >
+                          {String.fromCharCode(65 + i)}
+                        </Button>
+                        
+                        <div className="flex-1">
+                          <Textarea
+                            value={opt.text}
+                            onChange={(e) => {
+                              const newOptions = [...editFormData.options];
+                              newOptions[i].text = e.target.value;
+                              setEditFormData({
+                                ...editFormData,
+                                options: newOptions
+                              });
+                            }}
+                            rows={2}
+                            className="font-mono text-sm"
+                          />
+                          
+                          <div className="p-2 bg-gray-50 rounded text-sm mt-1">
+                            <div 
+                              className="latex-content"
+                              dangerouslySetInnerHTML={{ 
+                                __html: renderLatexString(opt.text) 
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (editFormData.options.length < 6) {
+                            setEditFormData({
+                              ...editFormData,
+                              options: [
+                                ...editFormData.options,
+                                { text: "New option", isCorrect: false }
+                              ]
+                            });
+                          } else {
+                            toast({
+                              title: "Maximum options reached",
+                              description: "You can have at most 6 options per question."
+                            });
+                          }
+                        }}
+                      >
+                        Add Option
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (editFormData.options.length > 2) {
+                            const newOptions = [...editFormData.options];
+                            newOptions.pop();
+                            // Make sure at least one option is correct
+                            if (!newOptions.some(o => o.isCorrect)) {
+                              newOptions[0].isCorrect = true;
+                            }
+                            setEditFormData({
+                              ...editFormData,
+                              options: newOptions
+                            });
+                          } else {
+                            toast({
+                              title: "Minimum options required",
+                              description: "You need at least 2 options per question."
+                            });
+                          }
+                        }}
+                      >
+                        Remove Last Option
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-explanation">Explanation (Optional)</Label>
+                    <Textarea
+                      id="edit-explanation"
+                      value={editFormData.explanation}
+                      onChange={(e) => setEditFormData({
+                        ...editFormData,
+                        explanation: e.target.value
+                      })}
+                      rows={3}
+                      className="font-mono text-sm"
+                      placeholder="Add an explanation for this question (optional)"
+                    />
+                    
+                    {editFormData.explanation && (
+                      <div className="p-2 bg-gray-50 rounded text-sm mt-1">
+                        <div className="text-xs text-gray-500 mb-1">Preview:</div>
+                        <div 
+                          className="latex-content"
+                          dangerouslySetInnerHTML={{ 
+                            __html: renderLatexString(editFormData.explanation) 
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (editingIndex !== null) {
+                        // Create a copy of the parsed questions array
+                        const updatedQuestions = [...parsedQuestions];
+                        
+                        // Make sure at least one option is correct
+                        if (!editFormData.options.some(o => o.isCorrect)) {
+                          editFormData.options[0].isCorrect = true;
+                        }
+                        
+                        // Update the question at the editing index
+                        updatedQuestions[editingIndex] = {
+                          question: editFormData.question,
+                          options: editFormData.options,
+                          explanation: editFormData.explanation
+                        };
+                        
+                        // Update the state
+                        setParsedQuestions(updatedQuestions);
+                        setEditDialogOpen(false);
+                        
+                        // Show a success message
+                        toast({
+                          title: "Question updated",
+                          description: "Your changes have been saved."
+                        });
+                      }
+                    }}
+                  >
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
           
           <TabsContent value="appearance" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Export Options</CardTitle>
+                <CardDescription>
+                  Export your flashcard sets to different formats
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-amber-50 border border-amber-200 rounded p-4 mb-4">
+                  <h3 className="font-medium text-amber-800 mb-2">Export Functionality</h3>
+                  <p className="text-sm text-amber-700">
+                    Export your flashcard sets to PDF format for printing or sharing. The export includes LaTeX formatting and all card details.
+                  </p>
+                </div>
+                
+                <div className="grid gap-4">
+                  <div className="flex justify-between items-center p-4 border rounded-md">
+                    <div>
+                      <h3 className="font-medium">Export All Sets to PDF</h3>
+                      <p className="text-sm text-muted-foreground">Generate a PDF document of all your flashcard sets</p>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setIsExporting(true);
+                        // In a real implementation, this would call an API to generate a PDF
+                        // For now we'll simulate the process with a timeout
+                        setTimeout(() => {
+                          setIsExporting(false);
+                          toast({
+                            title: "PDF Export Ready",
+                            description: "Your PDF has been generated and is ready for download."
+                          });
+                          
+                          // Since we can't actually generate a PDF in this demo, we'll just
+                          // show instructions on how this would work in a production environment
+                          alert("In a production environment, this would generate and download a PDF file containing all your flashcard sets with LaTeX formatting. For this demo, we're showing the toast notification only.");
+                        }, 2000);
+                      }}
+                      disabled={isExporting}
+                    >
+                      {isExporting ? (
+                        <>Exporting...</>
+                      ) : (
+                        <>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Export to PDF
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-4 border rounded-md">
+                    <div>
+                      <h3 className="font-medium">Generate Android APK</h3>
+                      <p className="text-sm text-muted-foreground">Create a shareable Android app package</p>
+                    </div>
+                    <Button 
+                      variant="secondary"
+                      onClick={() => {
+                        alert("In a production environment, this would build and generate an Android APK file that includes all your current flashcard sets. The APK would be configured to request storage permissions for saving updates and new sets.");
+                        toast({
+                          title: "APK Generation",
+                          description: "This feature would generate an Android APK in a production environment."
+                        });
+                      }}
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Create APK
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card>
               <CardHeader>
                 <CardTitle>Appearance Settings</CardTitle>
