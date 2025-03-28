@@ -1,11 +1,11 @@
 {
-  "name": "MathCards",
-  "short_name": "MathCards",
+  "name": "FormulaNote",
+  "short_name": "FormulaNote",
   "description": "A powerful and engaging flashcard learning platform for math and science",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
-  "theme_color": "#3b82f6",
+  "theme_color": "#00C8FF",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",

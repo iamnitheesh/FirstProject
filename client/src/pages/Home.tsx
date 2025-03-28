@@ -249,7 +249,7 @@ export default function Home() {
             </Button>
             <h1 className="text-xl font-semibold text-primary flex items-center">
               <i className="ri-flashcard-line mr-2 text-2xl"></i>
-              MathCards
+              FormulaNote
             </h1>
           </div>
           <div className="flex items-center space-x-4">
@@ -284,7 +284,7 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-primary rounded-full mb-4">
                   <i className="ri-flashcard-line text-3xl"></i>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to MathCards</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to FormulaNote</h2>
                 <p className="text-gray-600 mb-6">
                   Create customizable math flashcard sets with LaTeX support
                 </p>
