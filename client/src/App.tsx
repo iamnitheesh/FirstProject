@@ -68,18 +68,12 @@ function App() {
   }
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <DeviceProvider>
-          <ApiProvider>
-            <Router />
-            <PwaInstallPrompt />
-            <OfflineIndicator />
-            <Toaster />
-          </ApiProvider>
-        </DeviceProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <DeviceProvider>
+      <Router />
+      <PwaInstallPrompt />
+      <OfflineIndicator />
+      <Toaster />
+    </DeviceProvider>
   );
 }
 
