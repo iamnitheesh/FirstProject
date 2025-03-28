@@ -406,7 +406,7 @@ export function shuffleArray<T>(array: T[]): T[] {
 /**
  * Format date to a readable string
  */
-export function formatDate(date: Date | string | undefined): string {
+export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return '';
   
   const d = typeof date === 'string' ? new Date(date) : date;

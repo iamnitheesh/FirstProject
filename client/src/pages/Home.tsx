@@ -41,6 +41,11 @@ export default function Home() {
             <Button onClick={() => setSetModalOpen(true)} className="bg-primary hover:bg-blue-700">
               <i className="ri-add-line mr-1"></i> New Set
             </Button>
+            <Link href="/settings">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <i className="ri-settings-3-line text-lg"></i>
+              </Button>
+            </Link>
             <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center">
               <span className="font-medium">JS</span>
             </div>

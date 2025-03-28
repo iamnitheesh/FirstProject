@@ -144,14 +144,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <Separator className="my-4" />
             
             <div className="space-y-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-gray-700"
-              >
-                <i className="ri-settings-4-line mr-2"></i>
-                Settings
-              </Button>
+              <Link href="/settings">
+                <a className={`flex items-center w-full px-3 py-2 text-sm rounded-md ${
+                  isActive(`/settings`) 
+                    ? 'bg-blue-50 text-primary' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}>
+                  <i className="ri-settings-4-line mr-2"></i>
+                  Settings
+                </a>
+              </Link>
               <Button 
                 variant="ghost" 
                 size="sm" 

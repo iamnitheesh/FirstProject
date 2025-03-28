@@ -7,12 +7,14 @@ import Home from "@/pages/Home";
 import SetView from "@/pages/SetView";
 import StudyMode from "@/pages/StudyMode";
 import TestMode from "@/pages/TestMode";
+import Settings from "@/pages/Settings";
 import { useState } from "react";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/settings" component={Settings} />
       <Route path="/sets/:id" component={SetView} />
       <Route path="/sets/:id/study" component={StudyMode} />
       <Route path="/sets/:id/test" component={TestMode} />
