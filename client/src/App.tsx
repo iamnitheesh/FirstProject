@@ -69,10 +69,12 @@ function App() {
   
   return (
     <DeviceProvider>
-      <Router />
-      <PwaInstallPrompt />
-      <OfflineIndicator />
-      <Toaster />
+      <ApiProvider>
+        <Router />
+        <PwaInstallPrompt />
+        <OfflineIndicator />
+        <Toaster />
+      </ApiProvider>
     </DeviceProvider>
   );
 }

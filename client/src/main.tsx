@@ -16,9 +16,7 @@ window.katex = katex;
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <ApiProvider>
-        <App />
-      </ApiProvider>
+      <App />
     </ThemeProvider>
   </QueryClientProvider>
 );
