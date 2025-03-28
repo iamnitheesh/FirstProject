@@ -63,11 +63,12 @@ app.use((req, res, next) => {
   const isDev = process.env.NODE_ENV !== 'production';
   
   if (isDev) {
-    // In development, Vite needs to handle all requests first
-    app.use((req, res, next) => {
+    // In development, Vite needs to handle all non-API requests
+    app.use(async (req, res, next) => {
       if (req.url.startsWith('/api')) {
         next();
       } else {
+        const { default: vite } = await import('./vite');
         vite.middlewares(req, res, next);
       }
     });
