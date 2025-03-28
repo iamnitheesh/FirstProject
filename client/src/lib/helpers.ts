@@ -5,7 +5,7 @@ import { Option } from "@shared/schema";
  * Uses multiple strategies to create plausible wrong answers
  */
 export function generateRandomOptions(correctOption: string): Option[] {
-  const correctOptionObj = { text: correctOption, isCorrect: true };
+  const correctOptionObj = { text: correctOption, isCorrect: true, isMultipleSelect: false };
   const wrongOptions: Option[] = [];
   
   // Try to determine if the correct answer has a specific format
@@ -155,7 +155,7 @@ export function generateRandomOptions(correctOption: string): Option[] {
         }
       }
       
-      wrongOptions.push({ text: wrongText, isCorrect: false });
+      wrongOptions.push({ text: wrongText, isCorrect: false, isMultipleSelect: false });
     }
   } 
   // Strategy 2: For text answers with multiple words
@@ -295,7 +295,7 @@ export function generateRandomOptions(correctOption: string): Option[] {
         wrongText = qualifiers[Math.floor(Math.random() * qualifiers.length)] + ' ' + correctOption;
       }
       
-      wrongOptions.push({ text: wrongText, isCorrect: false });
+      wrongOptions.push({ text: wrongText, isCorrect: false, isMultipleSelect: false });
     }
   } 
   // Strategy 3: For short answers or fallback
@@ -382,7 +382,7 @@ export function generateRandomOptions(correctOption: string): Option[] {
         wrongText = correctOption + '*';
       }
       
-      wrongOptions.push({ text: wrongText, isCorrect: false });
+      wrongOptions.push({ text: wrongText, isCorrect: false, isMultipleSelect: false });
     }
   }
   

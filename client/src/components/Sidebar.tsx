@@ -80,14 +80,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     key={set.id} 
                     href={`/sets/${set.id}`}
                   >
-                    <a className={`flex items-center w-full px-3 py-2 text-sm rounded-md ${
+                    <div className={`flex items-center w-full px-3 py-2 text-sm rounded-md cursor-pointer ${
                       isActive(`/sets/${set.id}`) 
                         ? 'bg-blue-50 text-primary' 
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}>
                       <i className="ri-flashcard-line mr-2"></i>
                       {set.title}
-                    </a>
+                    </div>
                   </Link>
                 ))
               ) : (
@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {recentSets.length > 0 ? (
                   recentSets.map((set) => (
                     <Link key={set.id} href={`/sets/${set.id}`}>
-                      <a className="flex items-center justify-between w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                      <div className="flex items-center justify-between w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer">
                         <div className="flex items-center">
                           <i className="ri-history-line mr-2"></i>
                           <span className="truncate">{set.title}</span>
@@ -114,7 +114,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span className="text-xs text-gray-500">
                           {formatDate(set.lastAccessed)}
                         </span>
-                      </a>
+                      </div>
                     </Link>
                   ))
                 ) : (
@@ -145,14 +145,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             
             <div className="space-y-1">
               <Link href="/settings">
-                <a className={`flex items-center w-full px-3 py-2 text-sm rounded-md ${
+                <div className={`flex items-center w-full px-3 py-2 text-sm rounded-md cursor-pointer ${
                   isActive(`/settings`) 
                     ? 'bg-blue-50 text-primary' 
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}>
                   <i className="ri-settings-4-line mr-2"></i>
                   Settings
-                </a>
+                </div>
               </Link>
               <Button 
                 variant="ghost" 
