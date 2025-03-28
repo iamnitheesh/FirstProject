@@ -363,13 +363,23 @@ export default function TestMode() {
               </div>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExitTest}
-          >
-            <i className="ri-close-line mr-1"></i> Exit
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => setLocation('/')}
+            >
+              <i className="ri-home-line"></i> Home
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExitTest}
+            >
+              <i className="ri-close-line mr-1"></i> Exit
+            </Button>
+          </div>
         </div>
         
         {/* Progress Bar */}

@@ -255,10 +255,34 @@ export default function Settings() {
       setImportSetDescription('');
       setParsedQuestions([]);
       
-      // Navigate to the new set
-      setTimeout(() => {
-        window.location.href = `/sets/${newSet.id}`;
-      }, 500);
+      // Show toast with option to view set or stay on the page
+      toast({
+        title: "Import successful!",
+        description: (
+          <div className="flex flex-col gap-2 mt-2">
+            <div>Created a new set '{importSetName}' with {parsedQuestions.length} cards.</div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8"
+                onClick={() => window.location.href = `/sets/${newSet.id}`}
+              >
+                View Set
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8"
+                onClick={() => window.location.href = '/'}
+              >
+                Back to Home
+              </Button>
+            </div>
+          </div>
+        ),
+        duration: 10000,
+      });
       
     } catch (error: any) {
       console.error("Error importing flashcards:", error);
@@ -278,8 +302,8 @@ export default function Settings() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Settings</h1>
           <Link href="/">
-            <Button variant="outline">
-              <i className="ri-arrow-left-line mr-2"></i> Back to Home
+            <Button variant="outline" className="flex items-center gap-1">
+              <i className="ri-arrow-left-line"></i> Back to Home
             </Button>
           </Link>
         </div>

@@ -2,17 +2,25 @@ import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 export default function Help() {
   
   return (
     <div className="container py-6 md:py-10 max-w-5xl mx-auto">
       <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Help & Documentation</h1>
-          <p className="text-muted-foreground">
-            Learn how to use the flashcard application effectively
-          </p>
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Help & Documentation</h1>
+            <p className="text-muted-foreground">
+              Learn how to use the flashcard application effectively
+            </p>
+          </div>
+          <Link href="/">
+            <Button variant="outline" className="flex items-center gap-1">
+              <i className="ri-arrow-left-line"></i> Back to Home
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="latex">
@@ -273,16 +281,7 @@ D) $1/\\sin(x)$`}
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-center pt-4">
-          <Link href="/">
-            <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
-              Back to Home
-            </div>
-          </Link>
-        </div>
+
       </div>
     </div>
   );

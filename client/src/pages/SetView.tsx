@@ -122,7 +122,14 @@ export default function SetView() {
               MathCards
             </h1>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-1" 
+              onClick={() => setLocation('/')}
+            >
+              <i className="ri-arrow-left-line"></i> Back to Home
+            </Button>
             <Button onClick={handleOpenCardModal} className="bg-primary hover:bg-blue-700">
               <i className="ri-add-line mr-1"></i> Add Card
             </Button>

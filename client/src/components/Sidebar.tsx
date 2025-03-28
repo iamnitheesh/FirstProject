@@ -152,36 +152,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             
             <Separator className="my-4" />
             
-            <div className="flex justify-between items-center">
+            <div className="space-y-2">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Menu</span>
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="px-2 h-8">
-                    <Menu className="h-4 w-4" />
+              <div className="space-y-1">
+                <Link href="/settings" className="w-full">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Options</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  
-                  <Link href="/settings" className="w-full">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                  </Link>
-                  
-                  <Link href="/help" className="w-full">
-                    <DropdownMenuItem>
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      <span>Help & Support</span>
-                    </DropdownMenuItem>
-                  </Link>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={() => {
+                </Link>
+                
+                <Link href="/help" className="w-full">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Help & Support</span>
+                  </Button>
+                </Link>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => {
                     const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
                     if (theme === 'dark') {
                       document.documentElement.classList.add('dark');
@@ -189,38 +182,41 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       document.documentElement.classList.remove('dark');
                     }
                     localStorage.setItem('theme', theme);
-                  }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="5"></circle>
-                      <line x1="12" y1="1" x2="12" y2="3"></line>
-                      <line x1="12" y1="21" x2="12" y2="23"></line>
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                      <line x1="1" y1="12" x2="3" y2="12"></line>
-                      <line x1="21" y1="12" x2="23" y2="12"></line>
-                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                    <span>Toggle Dark Mode</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <Link href="/settings?tab=export" className="w-full">
-                    <DropdownMenuItem>
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>Export All Sets to PDF</span>
-                    </DropdownMenuItem>
-                  </Link>
-                  
-                  <DropdownMenuItem onClick={() => {
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                  </svg>
+                  <span>Toggle Dark Mode</span>
+                </Button>
+                
+                <Link href="/settings?tab=export" className="w-full">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Export All Sets to PDF</span>
+                  </Button>
+                </Link>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => {
                     alert("In a production environment, this would build and generate an Android APK file that includes all your current flashcard sets. The APK would be configured to request storage permissions for saving updates and new sets.");
-                  }}>
-                    <Share2 className="mr-2 h-4 w-4" />
-                    <span>Share App (APK)</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  }}
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  <span>Share App (APK)</span>
+                </Button>
+              </div>
             </div>
           </div>
         </ScrollArea>

@@ -177,13 +177,23 @@ export default function StudyMode() {
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-800">{set?.title}</h1>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExitStudy}
-          >
-            <i className="ri-close-line mr-1"></i> Exit
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => setLocation('/')}
+            >
+              <i className="ri-home-line"></i> Home
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExitStudy}
+            >
+              <i className="ri-close-line mr-1"></i> Exit
+            </Button>
+          </div>
         </div>
         
         {/* Progress Bar */}
