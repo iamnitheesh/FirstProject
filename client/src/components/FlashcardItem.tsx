@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Flashcard } from '@shared/schema';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { CardActions } from '@/components/CardActions';
 
 interface FlashcardItemProps {
   card: Flashcard;
@@ -61,24 +62,11 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
               <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium">
                 Card #{card.id}
               </div>
-              <div className="flex">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
-                  onClick={() => onEdit(card)}
-                >
-                  <i className="ri-edit-line text-lg"></i>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  <i className="ri-delete-bin-line text-lg"></i>
-                </Button>
-              </div>
+              <CardActions 
+                card={card} 
+                onEdit={onEdit} 
+                onDelete={() => setConfirmDelete(true)} 
+              />
             </div>
             <div 
               className="text-gray-800 mb-2" 
@@ -103,9 +91,11 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
                     <div key={index} className="flex items-center space-x-2">
                       <Checkbox id={`option-${index}`} />
                       <div className="flex-grow">
-                        <label htmlFor={`option-${index}`} className="text-sm font-medium leading-none cursor-pointer">
-                          {renderLatex(option.text)}
-                        </label>
+                        <label 
+                          htmlFor={`option-${index}`} 
+                          className="text-sm font-medium leading-none cursor-pointer"
+                          dangerouslySetInnerHTML={{ __html: option.text }}
+                        ></label>
                       </div>
                     </div>
                   ))}
@@ -116,9 +106,11 @@ export default function FlashcardItem({ card, onEdit }: FlashcardItemProps) {
                     <div key={index} className="flex items-center space-x-2">
                       <RadioGroupItem value={index.toString()} id={`option-${index}`} />
                       <div className="flex-grow">
-                        <label htmlFor={`option-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          {renderLatex(option.text)}
-                        </label>
+                        <label 
+                          htmlFor={`option-${index}`} 
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          dangerouslySetInnerHTML={{ __html: option.text }}
+                        ></label>
                       </div>
                     </div>
                   ))}

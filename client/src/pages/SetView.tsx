@@ -18,17 +18,21 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { queryClient } from '@/lib/queryClient';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useClipboard } from '@/lib/clipboard';
+import { SetPasteButton } from '@/components/CardActions';
 import type { FlashcardSet, Flashcard } from '@shared/schema';
 
 export default function SetView() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const clipboard = useClipboard();
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cardModalOpen, setCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Flashcard | undefined>(undefined);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pastingCards, setPastingCards] = useState(false);
   
   // Fetch set details
   const { 
@@ -69,6 +73,49 @@ export default function SetView() {
       });
     }
   });
+  
+  // Paste cards mutation
+  const pasteCardsMutation = useMutation({
+    mutationFn: async () => {
+      setPastingCards(true);
+      return await apiRequest('POST', `/api/sets/${id}/paste-cards`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/sets/${id}/cards`] });
+      
+      // Clear clipboard if operation was 'cut'
+      if (clipboard.operation === 'cut') {
+        clipboard.clear();
+      }
+      
+      toast({
+        title: 'Cards pasted',
+        description: `Successfully pasted ${clipboard.cards.length} cards to this set.`,
+      });
+      setPastingCards(false);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to paste cards',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setPastingCards(false);
+    }
+  });
+  
+  const handlePasteCards = () => {
+    if (!clipboard.hasItems()) {
+      toast({
+        title: 'Clipboard is empty',
+        description: 'Cut or copy cards from another set first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    pasteCardsMutation.mutate();
+  };
   
   const handleOpenCardModal = () => {
     setEditingCard(undefined);
@@ -178,6 +225,12 @@ export default function SetView() {
                 >
                   <i className="ri-add-line mr-1"></i> Add Card
                 </Button>
+                <SetPasteButton 
+                  setId={parseInt(id)} 
+                  onPaste={handlePasteCards}
+                  showLabel={true}
+                  isPasting={pastingCards}
+                />
                 <Button 
                   onClick={handleStartStudy}
                   className="bg-secondary hover:bg-green-700"
@@ -267,9 +320,21 @@ export default function SetView() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-1">No flashcards yet</h3>
               <p className="text-gray-500 mb-4">Get started by adding your first flashcard to this set.</p>
-              <Button onClick={handleOpenCardModal} className="bg-primary hover:bg-blue-700">
-                <i className="ri-add-line mr-1"></i> Add First Card
-              </Button>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleOpenCardModal} className="bg-primary hover:bg-blue-700">
+                  <i className="ri-add-line mr-1"></i> Add First Card
+                </Button>
+                {clipboard.hasItems() && (
+                  <Button 
+                    onClick={handlePasteCards} 
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                    disabled={pastingCards}
+                  >
+                    <i className="ri-clipboard-line mr-1"></i> 
+                    {pastingCards ? 'Pasting...' : `Paste ${clipboard.cards.length} Cards`}
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
