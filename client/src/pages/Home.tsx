@@ -13,6 +13,19 @@ import { Input } from '@/components/ui/input';
 import { queryClient } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  BookOpen, 
+  Plus, 
+  Settings, 
+  CheckCircle, 
+  Save, 
+  Square, 
+  CheckCircle2,
+  Search,
+  Grid,
+  List,
+  Menu
+} from '@/components/ui/icons';
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -112,18 +125,18 @@ export default function Home() {
               className="md:hidden text-white hover:bg-blue-500/30"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              <i className="ri-menu-line text-xl"></i>
+              <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-2">
               <div className="bg-white/20 p-1.5 rounded-lg">
-                <i className="ri-book-open-line text-white text-lg"></i>
+                <BookOpen className="text-white h-5 w-5" />
               </div>
               <h1 className="text-xl font-bold">
                 FormulaNote
               </h1>
             </div>
             <div className="hidden md:flex text-sm text-blue-100 bg-blue-500/30 rounded-full px-3 py-1 items-center ml-4">
-              <span><i className="ri-checkbox-circle-line text-xs mr-1"></i> Offline Ready</span>
+              <span><CheckCircle className="h-3 w-3 mr-1" /> Offline Ready</span>
             </div>
           </div>
           
@@ -132,11 +145,11 @@ export default function Home() {
               onClick={() => setSetModalOpen(true)} 
               className="bg-white text-blue-700 hover:bg-blue-50 shadow-sm font-medium"
             >
-              <i className="ri-add-line mr-1.5"></i> New Set
+              <Plus className="h-4 w-4 mr-1.5" /> New Set
             </Button>
             <Link href="/settings">
               <Button variant="ghost" size="icon" className="text-white hover:bg-blue-500/30 rounded-full">
-                <i className="ri-settings-3-line text-lg"></i>
+                <Settings className="h-5 w-5" />
               </Button>
             </Link>
             <div className="w-9 h-9 rounded-full bg-white text-blue-700 flex items-center justify-center shadow-sm">
