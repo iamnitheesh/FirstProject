@@ -60,6 +60,19 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
+  const isDev = process.env.NODE_ENV !== 'production';
+  
+  if (isDev) {
+    // In development, Vite needs to handle all requests first
+    app.use((req, res, next) => {
+      if (req.url.startsWith('/api')) {
+        next();
+      } else {
+        vite.middlewares(req, res, next);
+      }
+    });
+  }
+  
   server.listen(port, "0.0.0.0", () => {
     log(`Server running at http://0.0.0.0:${port}`);
   });
