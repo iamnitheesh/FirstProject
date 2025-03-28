@@ -77,3 +77,20 @@ export function truncateString(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   return str.substring(0, maxLength) + '...';
 }
+
+export function generateRandomOptions(correctAnswer: string): { text: string; isCorrect: boolean }[] {
+  const options = [
+    { text: correctAnswer, isCorrect: true },
+    { text: "Generated option 1", isCorrect: false },
+    { text: "Generated option 2", isCorrect: false },
+    { text: "Generated option 3", isCorrect: false }
+  ];
+  
+  // Shuffle the options
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  
+  return options;
+}
