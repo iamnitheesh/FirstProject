@@ -78,6 +78,10 @@ export function truncateString(str: string, maxLength: number): string {
   return str.substring(0, maxLength) + '...';
 }
 
+export function getOptionLetter(index: number): string {
+  return String.fromCharCode(65 + index);
+}
+
 export function generateRandomOptions(correctAnswer: string): { text: string; isCorrect: boolean }[] {
   const options = [
     { text: correctAnswer, isCorrect: true },
