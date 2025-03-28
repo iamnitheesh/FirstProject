@@ -43,27 +43,7 @@ import { queryClient } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MoreHorizontal, 
-  Pencil, 
-  Trash, 
-  Copy, 
-  MoveRight, 
-  Search, 
-  SortAsc, 
-  Clock, 
-  Grid3X3, 
-  List, 
-  Save,
-  BookMarked,
-  Download,
-  Upload,
-  BookOpen,
-  LayoutDashboard,
-  ClipboardList,
-  CheckCircle2,
-  Clock8
-} from 'lucide-react';
+// No imports needed from Lucide React as we're using Remix Icons
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -254,33 +234,44 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="md:hidden text-white hover:bg-blue-500/30"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               <i className="ri-menu-line text-xl"></i>
             </Button>
-            <h1 className="text-xl font-semibold text-primary flex items-center">
-              <i className="ri-flashcard-line mr-2 text-2xl"></i>
-              FormulaNote
-            </h1>
+            <div className="flex items-center space-x-2">
+              <div className="bg-white/20 p-1.5 rounded-lg">
+                <i className="ri-book-open-line text-white text-lg"></i>
+              </div>
+              <h1 className="text-xl font-bold">
+                FormulaNote
+              </h1>
+            </div>
+            <div className="hidden md:flex text-sm text-blue-100 bg-blue-500/30 rounded-full px-3 py-1 items-center ml-4">
+              <span><i className="ri-checkbox-circle-line text-xs mr-1"></i> Offline Ready</span>
+            </div>
           </div>
+          
           <div className="flex items-center space-x-4">
-            <Button onClick={() => setSetModalOpen(true)} className="bg-primary hover:bg-blue-700">
-              <i className="ri-add-line mr-1"></i> New Set
+            <Button 
+              onClick={() => setSetModalOpen(true)} 
+              className="bg-white text-blue-700 hover:bg-blue-50 shadow-sm font-medium"
+            >
+              <i className="ri-add-line mr-1.5"></i> New Set
             </Button>
             <Link href="/settings">
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-500/30 rounded-full">
                 <i className="ri-settings-3-line text-lg"></i>
               </Button>
             </Link>
-            <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center">
-              <span className="font-medium">JS</span>
+            <div className="w-9 h-9 rounded-full bg-white text-blue-700 flex items-center justify-center shadow-sm">
+              <span className="font-semibold text-sm">JS</span>
             </div>
           </div>
         </div>
@@ -297,22 +288,72 @@ export default function Home() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50">
           {/* Welcome State / Dashboard */}
           {sets.length === 0 && !isLoading ? (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)]">
-              <div className="text-center max-w-md mx-auto">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-primary rounded-full mb-4">
-                  <i className="ri-flashcard-line text-3xl"></i>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to FormulaNote</h2>
-                <p className="text-gray-600 mb-6">
-                  Create customizable math flashcard sets with LaTeX support
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button 
-                    onClick={() => setSetModalOpen(true)}
-                    className="bg-primary hover:bg-blue-700"
-                  >
-                    <i className="ri-add-line mr-1"></i> Create New Set
-                  </Button>
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)]">
+              <div className="bg-white rounded-xl shadow-lg p-8 max-w-3xl w-full mx-auto">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-2xl mb-2">
+                      <i className="ri-book-open-line text-3xl"></i>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-800">Welcome to FormulaNote</h2>
+                    <p className="text-gray-600">
+                      Create customizable mathematical flashcards with rich LaTeX formatting to 
+                      master complex formulas and concepts.
+                    </p>
+                    <div className="pt-3">
+                      <h3 className="text-sm font-medium text-gray-500 uppercase mb-3">Features</h3>
+                      <ul className="space-y-2">
+                        <li className="flex items-center text-gray-600">
+                          <div className="bg-blue-100 rounded-full p-1 mr-2">
+                            <i className="ri-check-line text-blue-600"></i>
+                          </div>
+                          <span>Beautiful LaTeX math rendering</span>
+                        </li>
+                        <li className="flex items-center text-gray-600">
+                          <div className="bg-blue-100 rounded-full p-1 mr-2">
+                            <i className="ri-check-line text-blue-600"></i>
+                          </div>
+                          <span>Study and test modes for effective learning</span>
+                        </li>
+                        <li className="flex items-center text-gray-600">
+                          <div className="bg-blue-100 rounded-full p-1 mr-2">
+                            <i className="ri-check-line text-blue-600"></i>
+                          </div>
+                          <span>Full offline support for on-the-go study</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="pt-4">
+                      <Button 
+                        onClick={() => setSetModalOpen(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 h-auto rounded-lg font-semibold shadow-md"
+                        size="lg"
+                      >
+                        <i className="ri-add-line mr-2"></i> Create Your First Set
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="relative hidden md:block bg-gradient-to-br from-blue-100 to-blue-50 p-6 rounded-xl">
+                    <div className="absolute top-4 right-4">
+                      <div className="text-xs font-medium bg-blue-600 text-white px-2 py-1 rounded-full">
+                        Math made easy
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-3">
+                      <div className="bg-white shadow-sm rounded-lg p-4 transform rotate-1">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Derivative Rules</div>
+                        <div className="text-blue-800 font-mono text-xs">$f(x) = x^2 \implies f'(x) = 2x$</div>
+                      </div>
+                      <div className="bg-white shadow-sm rounded-lg p-4 transform -rotate-1">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Integration by Parts</div>
+                        <div className="text-blue-800 font-mono text-xs">$\int u\,dv = uv - \int v\,du$</div>
+                      </div>
+                      <div className="bg-white shadow-sm rounded-lg p-4 transform rotate-1">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Pythagorean Theorem</div>
+                        <div className="text-blue-800 font-mono text-xs">$a^2 + b^2 = c^2$</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -329,7 +370,7 @@ export default function Home() {
                     className="flex items-center gap-1"
                     onClick={saveAllData}
                   >
-                    <Save className="h-4 w-4" /> Save All
+                    <i className="ri-save-line mr-1"></i> Save All
                   </Button>
                   
                   <Button 
@@ -352,74 +393,95 @@ export default function Home() {
               </div>
               
               {/* Search and sort controls */}
-              <div className="bg-white p-3 rounded-lg shadow-sm mb-6">
+              <div className="bg-white p-4 rounded-xl shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500">
+                      <i className="ri-search-line text-lg"></i>
+                    </div>
                     <Input
-                      placeholder="Search flashcard sets..."
+                      placeholder="Search your flashcard sets..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 w-full"
+                      className="pl-9 w-full bg-gray-50 border-gray-100 focus:border-blue-300 focus:ring-blue-300"
                     />
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <Select
                       value={sortBy}
                       onValueChange={(value: any) => setSortBy(value)}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[180px] bg-gray-50 border-gray-100">
                         <div className="flex items-center gap-1">
-                          <SortAsc className="h-4 w-4" />
+                          <i className="ri-sort-asc text-blue-500"></i>
                           <span>Sort by</span>
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="alphabetical">A-Z (Alphabetical)</SelectItem>
-                        <SelectItem value="lastEdited">Last Edited</SelectItem>
-                        <SelectItem value="recentlyUsed">Recently Used</SelectItem>
+                        <SelectItem value="alphabetical">
+                          <div className="flex items-center">
+                            <i className="ri-sort-alphabetically text-blue-500 mr-2"></i>
+                            A-Z (Alphabetical)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="lastEdited">
+                          <div className="flex items-center">
+                            <i className="ri-edit-line text-blue-500 mr-2"></i>
+                            Last Edited
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="recentlyUsed">
+                          <div className="flex items-center">
+                            <i className="ri-time-line text-blue-500 mr-2"></i>
+                            Recently Used
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     
-                    <div className="flex border rounded-md overflow-hidden">
+                    <div className="flex rounded-md overflow-hidden border border-gray-100 bg-gray-50">
                       <Button
                         variant={viewMode === 'grid' ? 'default' : 'ghost'}
                         size="sm"
-                        className="rounded-none"
+                        className={`rounded-none ${viewMode === 'grid' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-500 hover:text-blue-600'}`}
                         onClick={() => setViewMode('grid')}
                       >
-                        <Grid3X3 className="h-4 w-4" />
+                        <i className="ri-grid-fill text-lg"></i>
                       </Button>
                       <Button
                         variant={viewMode === 'list' ? 'default' : 'ghost'}
                         size="sm"
-                        className="rounded-none"
+                        className={`rounded-none ${viewMode === 'list' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-500 hover:text-blue-600'}`}
                         onClick={() => setViewMode('list')}
                       >
-                        <List className="h-4 w-4" />
+                        <i className="ri-list-unordered text-lg"></i>
                       </Button>
                     </div>
                   </div>
                 </div>
                 
                 {filteredAndSortedSets.length === 0 && searchQuery && (
-                  <div className="mt-2 text-sm text-gray-500">
-                    No flashcard sets found matching "{searchQuery}". Try a different search term.
+                  <div className="mt-3 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center">
+                      <i className="ri-information-line text-blue-500 mr-2"></i>
+                      No flashcard sets found matching "{searchQuery}". Try a different search term.
+                    </div>
                   </div>
                 )}
                 
                 {searchQuery && filteredAndSortedSets.length > 0 && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <Badge variant="outline" className="px-2 py-1">
+                  <div className="mt-3 flex items-center gap-2">
+                    <Badge className="px-2 py-1 bg-blue-100 text-blue-800 hover:bg-blue-100 border-none">
                       {filteredAndSortedSets.length} {filteredAndSortedSets.length === 1 ? 'result' : 'results'}
                     </Badge>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-7 text-xs"
+                      className="h-7 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                       onClick={() => setSearchQuery('')}
                     >
+                      <i className="ri-close-circle-line mr-1"></i>
                       Clear search
                     </Button>
                   </div>
@@ -460,16 +522,16 @@ export default function Home() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <i className="ri-more-2-fill"></i>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => handleEditSet(set, e)}>
-                              <Pencil className="mr-2 h-4 w-4" />
+                              <i className="ri-edit-line mr-2 text-blue-600"></i>
                               <span>Rename Set</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => handleDeleteSet(set, e)}>
-                              <Trash className="mr-2 h-4 w-4" />
+                              <i className="ri-delete-bin-line mr-2 text-red-500"></i>
                               <span>Delete Set</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -481,7 +543,7 @@ export default function Home() {
                                 description: "Copying sets will be available in a future update.",
                               });
                             }}>
-                              <Copy className="mr-2 h-4 w-4" />
+                              <i className="ri-file-copy-line mr-2 text-gray-600"></i>
                               <span>Duplicate Set</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => {
@@ -492,7 +554,7 @@ export default function Home() {
                                 description: "Moving cards between sets will be available in a future update.",
                               });
                             }}>
-                              <MoveRight className="mr-2 h-4 w-4" />
+                              <i className="ri-drag-move-line mr-2 text-gray-600"></i>
                               <span>Move Cards</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -532,8 +594,8 @@ export default function Home() {
                                       : 'linear-gradient(135deg, #3b82f6, #2563eb)'
                                   }}
                                 >
-                                  <div className="absolute top-3 right-3 bg-white/20 rounded-full p-1">
-                                    <BookOpen className="h-5 w-5 text-white" />
+                                  <div className="absolute top-3 right-3 bg-white/20 rounded-full p-1.5">
+                                    <i className="ri-book-open-line text-white text-sm"></i>
                                   </div>
                                   <h3 className="text-white text-xl font-bold line-clamp-1">{set.title}</h3>
                                   {set.description && (
@@ -558,11 +620,11 @@ export default function Home() {
                               <div className="p-4 bg-gray-50 mt-auto">
                                 <div className="flex justify-between items-center mb-2 text-xs text-gray-500">
                                   <span className="flex items-center">
-                                    <ClipboardList className="h-3.5 w-3.5 mr-1 text-primary" />
+                                    <i className="ri-file-list-line mr-1 text-blue-600"></i>
                                     {(set as any).totalCards || 0} {(set as any).totalCards === 1 ? 'card' : 'cards'}
                                   </span>
                                   <span className="flex items-center">
-                                    <Clock8 className="h-3.5 w-3.5 mr-1" />
+                                    <i className="ri-time-line mr-1"></i>
                                     {set.lastAccessed ? formatDate(set.lastAccessed) : 'Never used'}
                                   </span>
                                 </div>
