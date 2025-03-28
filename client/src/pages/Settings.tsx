@@ -42,47 +42,94 @@ export default function Settings() {
     setIsParsing(true);
 
     try {
-      // Split the text into separate questions
-      // This is a simplified parsing logic - we need to adjust based on the actual format
-      const questionBlocks = importText.split(/\\begin\{question\}|\\\[(Q[0-9]+)\]|\n\s*\n/).filter(block => block.trim());
+      // Split the text into separate questions using the format we specified
+      const questionBlocks = importText
+        .split(/# Question \d+[^\n]*\n/)
+        .slice(1) // Remove the first empty element
+        .map((block, index) => `# Question ${index + 1}${block}`); // Add the question number back
+      
+      if (questionBlocks.length === 0) {
+        // If no questions were found using our preferred format,
+        // try alternative formats
+        const alternativeBlocks = importText.split(/\\begin\{question\}|\\\[(Q[0-9]+)\]|\n\s*\n/)
+          .filter(block => block.trim());
+        
+        if (alternativeBlocks.length > 0) {
+          toast({
+            title: "Format Warning",
+            description: "Your content didn't follow the recommended format. We'll try to parse it anyway.",
+            variant: "destructive",
+          });
+          questionBlocks.push(...alternativeBlocks);
+        }
+      }
+
+      if (questionBlocks.length === 0) {
+        throw new Error("No questions found in the provided text.");
+      }
       
       // Process each question block
       const parsed = questionBlocks.map(block => {
-        // Try to extract the question and options
-        // This regex pattern looks for question text followed by options (A), (B), etc.
-        const questionMatch = block.match(/^(.*?)(?:\(A\)|\(a\)|\(1\)|\\begin\{enumerate\}|Options:)/s);
-        const questionText = questionMatch ? questionMatch[1].trim() : block.trim();
+        // Find the title/header
+        const titleMatch = block.match(/# Question (\d+):?\s*(.*?)$/m);
+        const title = titleMatch ? titleMatch[2].trim() : "";
         
-        // Extract options if they exist
-        const optionsMatch = block.match(/(?:\(A\)|\(a\)|\(1\)|\\begin\{enumerate\}|Options:)(.*?)(?:\\end\{question\}|$)/s);
-        let optionsText = optionsMatch ? optionsMatch[1].trim() : '';
-        
-        // Split options into array
-        const optionItems = optionsText
-          .split(/\(([A-Za-z0-9])\)/)
-          .filter(item => item.trim() && !item.match(/^[A-Za-z0-9]$/))
-          .map(item => item.trim());
-        
-        // If no options were found, try another approach - look for numbered options
+        // Extract options
+        // Look for lines that start with A), B), etc. (with or without asterisk)
+        const lines = block.split('\n');
+        let questionTextLines = [];
+        let optionsStarted = false;
         let options = [];
-        if (optionItems.length === 0) {
+        let correctOptionIndex = -1;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          
+          // Check if line is an option marker (A), B), etc.)
+          const optionMatch = line.match(/^(\*)?([A-D])\)\s*(.*)/);
+          
+          if (optionMatch) {
+            optionsStarted = true;
+            const isCorrect = !!optionMatch[1]; // Check if asterisk is present
+            const optionText = optionMatch[3].trim();
+            
+            options.push({
+              text: optionText,
+              isCorrect: isCorrect
+            });
+            
+            if (isCorrect) {
+              correctOptionIndex = options.length - 1;
+            }
+          } else if (!optionsStarted) {
+            // If it's not an option and we haven't started options yet,
+            // it's part of the question text
+            questionTextLines.push(line);
+          }
+        }
+        
+        // If no correct option was marked with *, make the first one correct
+        if (correctOptionIndex === -1 && options.length > 0) {
+          options[0].isCorrect = true;
+        }
+        
+        // If no options were found, create default ones
+        if (options.length === 0) {
           options = [
             { text: "Option created automatically", isCorrect: true },
             { text: "Incorrect option", isCorrect: false },
             { text: "Another incorrect option", isCorrect: false },
             { text: "Yet another incorrect option", isCorrect: false }
           ];
-        } else {
-          options = optionItems.map((text, index) => ({
-            text,
-            isCorrect: index === 0 // Assume first option is correct by default
-          }));
         }
+        
+        const questionText = questionTextLines.join('\n').trim();
         
         return {
           question: questionText,
           options,
-          explanation: "" // No explanation by default
+          explanation: "", // No explanation by default
+          title // Store title for future use if needed
         };
       });
       
@@ -92,11 +139,11 @@ export default function Settings() {
         title: `${parsed.length} questions parsed`,
         description: "Review the questions and click 'Import' to add them to your flashcards.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error parsing LaTeX:", error);
       toast({
         title: "Error parsing content",
-        description: "There was an error processing the LaTeX content. Please check the format and try again.",
+        description: error.message || "There was an error processing the LaTeX content. Please check the format and try again.",
         variant: "destructive",
       });
     } finally {
@@ -172,7 +219,7 @@ export default function Settings() {
       // Navigate to the new set (you might want to add navigation here)
       window.location.href = `/sets/${newSet.id}`;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error importing flashcards:", error);
       toast({
         title: "Import failed",
@@ -210,14 +257,54 @@ export default function Settings() {
                   Paste LaTeX content containing questions and options to import them as flashcards.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-4 space-y-3">
+                  <h3 className="font-semibold text-amber-800">LaTeX Import Format Instructions</h3>
+                  <p className="text-sm text-amber-700">
+                    Format your multiple-choice questions according to these guidelines for successful import:
+                  </p>
+                  <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
+                    <li>Start each question with <code className="bg-amber-100 px-1 rounded"># Question [number]: [optional title]</code></li>
+                    <li>Write the question text with LaTeX math expressions in $ or $$ delimiters</li>
+                    <li>List each option with a letter prefix (A, B, C...) followed by a closing parenthesis</li>
+                    <li>Mark correct answers with an asterisk (*) before the letter</li>
+                    <li>Separate questions with a blank line</li>
+                  </ul>
+                </div>
+
+                <div className="border rounded-md p-4 space-y-3 bg-gray-50">
+                  <h3 className="font-semibold">Example LaTeX Format</h3>
+                  <pre className="text-xs font-mono whitespace-pre-wrap p-3 bg-white border rounded overflow-x-auto">
+{`# Question 1: Limits and Continuity
+If $\\lim_{x \\to 0} \\frac{e^x - 1 - x}{x^2} = L$, then the value of $L$ is:
+A) $\\frac{1}{2}$
+B) $1$
+*C) $\\frac{1}{2}$
+D) $\\frac{3}{2}$
+
+# Question 2: Partial Derivatives
+The value of $\\frac{\\partial z}{\\partial x}$ at the point $(1, 0)$ for $z = x^2y + y^3$ is:
+A) $0$
+*B) $0$
+C) $1$
+D) $3$
+
+# Question 3: Integration Techniques
+Evaluate the integral $\\int \\frac{dx}{x\\sqrt{x^2-1}}$
+A) $\\ln|x + \\sqrt{x^2-1}| + C$
+B) $\\sin^{-1}\\frac{1}{x} + C$
+*C) $\\sec^{-1}|x| + C$
+D) $\\tan^{-1}\\sqrt{x^2-1} + C$`}
+                  </pre>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="set-name">Flashcard Set Name</Label>
                   <Input 
                     id="set-name" 
                     value={importSetName}
                     onChange={(e) => setImportSetName(e.target.value)}
-                    placeholder="e.g., Electrical Engineering MCQs"
+                    placeholder="e.g., Calculus MCQs"
                   />
                 </div>
                 
@@ -320,6 +407,53 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">Appearance settings will be available in a future update.</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>VS Code Deployment Guide</CardTitle>
+                <CardDescription>
+                  Instructions for deploying this application to VS Code
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 space-y-3">
+                  <h3 className="font-semibold text-blue-800">Deployment Instructions</h3>
+                  <p className="text-sm">
+                    Follow these steps to deploy the application in VS Code locally:
+                  </p>
+                  <ol className="text-sm space-y-2 list-decimal pl-5">
+                    <li>Clone the repository from GitHub or download the project files</li>
+                    <li>Open the project folder in VS Code</li>
+                    <li>Open a terminal in VS Code and run <code className="bg-blue-100 px-1 rounded">npm install</code> to install dependencies</li>
+                    <li>Start the development server with <code className="bg-blue-100 px-1 rounded">npm run dev</code></li>
+                    <li>The application will be available at <code className="bg-blue-100 px-1 rounded">http://localhost:5000</code></li>
+                  </ol>
+                </div>
+
+                <div className="bg-gray-50 border rounded-md p-4 space-y-3">
+                  <h3 className="font-semibold">Required VS Code Extensions</h3>
+                  <ul className="text-sm space-y-1 list-disc pl-5">
+                    <li><strong>ESLint</strong> - For code quality</li>
+                    <li><strong>Prettier</strong> - For code formatting</li>
+                    <li><strong>TypeScript</strong> - For TypeScript support</li>
+                    <li><strong>Tailwind CSS IntelliSense</strong> - For styling support</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-50 border border-green-200 rounded-md p-4 space-y-3">
+                  <h3 className="font-semibold text-green-800">Project Structure</h3>
+                  <p className="text-sm text-green-700">
+                    The application follows a standard React + Express structure:
+                  </p>
+                  <ul className="text-sm text-green-700 space-y-1 list-disc pl-5">
+                    <li><code className="bg-green-100 px-1 rounded">client/</code> - Frontend React application</li>
+                    <li><code className="bg-green-100 px-1 rounded">server/</code> - Backend Express API</li>
+                    <li><code className="bg-green-100 px-1 rounded">shared/</code> - Shared TypeScript types and schemas</li>
+                    <li><code className="bg-green-100 px-1 rounded">package.json</code> - Project dependencies and scripts</li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
