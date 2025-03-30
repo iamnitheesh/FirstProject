@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "NODE_ENV=production node dist/index.js",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist/server",
+    "start": "cross-env NODE_ENV=production node dist/server/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
@@ -59,6 +59,7 @@
     "katex": "^0.16.21",
     "lucide-react": "^0.453.0",
     "memorystore": "^1.6.7",
+    "multer": "^1.4.5-lts.2",
     "openai": "^4.89.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
@@ -92,6 +93,7 @@
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "4.17.21",
     "@types/express-session": "^1.18.0",
+    "@types/multer": "^1.4.12",
     "@types/node": "20.16.11",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
@@ -100,13 +102,15 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.30.4",
+    "electron": "^35.1.2",
+    "electron-builder": "^26.0.12",
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
-    "tsx": "^4.19.1",
-    "typescript": "5.6.3",
-    "vite": "^5.4.14"
+    "tsx": "^4.17.1",
+    "typescript": "^5.8.2"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

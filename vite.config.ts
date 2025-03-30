@@ -14,7 +14,7 @@ export default defineConfig({
     hmr: { host: '0.0.0.0' },
     watch: {
       usePolling: true,
-    }
+    },
   },
   plugins: [
     react(),
@@ -37,7 +37,7 @@ export default defineConfig({
   },
   root: path.resolve(__dirname, "client"),
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
-    emptyOutDir: true,
+    outDir: path.resolve(__dirname, "dist/server/public"), // Ensure assets are placed in dist/server/public
+    emptyOutDir: true, // Clear the output directory before building
   },
 });
