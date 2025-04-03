@@ -1,55 +1,36 @@
 const express = require("express");
 const path = require("path");
-const { exec } = require('child_process');
-
-// Keep the process running
-process.stdin.resume();
-
-// Global error handlers
-process.on("uncaughtException", (err) => {
-  console.error("Unhandled Error:", err);
-});
-
-process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled Rejection:", reason);
-});
+const { exec } = require("child_process");
 
 const app = express();
 const port = 5000;
 
-// Configure express
-app.use(express.static(path.join(__dirname, "dist")));
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, "dist"))); // Ensure this path is correct
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+  res.sendFile(path.join(__dirname, "dist", "index.html")); // Ensure fallback to index.html
 });
 
-// Create HTTP server with proper error handling
-const server = app.listen(port, 'localhost', () => {
-  console.log('='.repeat(50));
-  console.log(`Server running at http://localhost:${port}`);
-  console.log('DO NOT CLOSE THIS WINDOW');
-  console.log('Minimize this window and use the app in your browser');
-  console.log('='.repeat(50));
-  
-  // Open browser with delay
+// Start the server and open the browser
+const server = app.listen(port, "localhost", () => {
+  console.log("=".repeat(50));
+  console.log(`Server is running at http://localhost:${port}`);
+  console.log("Minimize this window to keep the server running.");
+  console.log("=".repeat(50));
+
   setTimeout(() => {
-    exec('start http://localhost:5000', (error) => {
-      if (error) console.error('Browser launch error:', error);
+    exec(`start http://localhost:${port}`, (error) => {
+      if (error) {
+        console.error("Failed to open the browser:", error);
+      }
     });
   }, 2000);
 });
 
 // Handle server errors
-server.on('error', (err) => {
-  console.error('Server Error:', err);
+server.on("error", (err) => {
+  console.error("Server encountered an error:", err);
 });
 
-// Multiple keep-alive mechanisms
+// Keep the process alive
 setInterval(() => {}, 1000);
-setTimeout(() => {}, 100000);
-process.on('SIGINT', () => {
-  console.log('\nKeeping application alive. Use Ctrl+C twice to exit.');
-});
-
-// Health check endpoint
-app.get('/health', (_, res) => res.send('ok'));
